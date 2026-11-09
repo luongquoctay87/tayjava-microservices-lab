@@ -2,7 +2,7 @@
 
 Hands-on workspace for the TayJava Microservices series. Each lesson that changes the running system lives on its own branch. Later branches keep everything from the earlier ones.
 
-This branch is **lesson 6**: the lesson 5 services, packaged with a multi-stage Dockerfile per module and started together by Docker Compose. Data is still in memory. The services still do not call each other. Layout follows the TayJava backend: `controller`, `service`, `repository`, `entity`, and a shared `common` module for `Resp` / `ApiResp`.
+This branch is **lesson 7**: each service has its own PostgreSQL database. `course-service` uses `course_db` and `enrollment-service` uses `enrollment_db`. There is still no HTTP call between them. Layout follows the TayJava backend: `controller`, `service`, `repository`, `entity`, and a shared `common` module for `Resp` / `ApiResp`.
 
 | Service | Port | Owns |
 |---------|------|------|
@@ -45,6 +45,6 @@ curl -s 'http://localhost:8082/api/enrollments?student=an.student'
 
 A successful call is wrapped as `{ "success": true, "code": "SUCCESS", "message": "...", "data": ... }`. A missing course returns HTTP 404 with `code` `COURSE_NOT_FOUND`.
 
-Stopping `course-service` leaves `enrollment-service` running. That is process isolation, not a finished microservice. Compose, a database per service, and the HTTP call arrive in lessons 6–8.
+`docker compose up` needs host ports 5432, 8081, and 8082 free. `mvn test` uses an in-memory H2 database and does not need PostgreSQL. Stopping `course-service` leaves `enrollment-service` running. The HTTP call from Enrollment to Course arrives in lesson 8.
 
 Demo users in the article: `an.student` (student) and `bao.teacher` (instructor). This lesson does not enforce roles.

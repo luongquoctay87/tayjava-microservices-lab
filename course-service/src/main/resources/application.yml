@@ -4,6 +4,18 @@ server:
 spring:
   application:
     name: course-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/course_db}
+    username: ${SPRING_DATASOURCE_USERNAME:course_app}
+    password: ${SPRING_DATASOURCE_PASSWORD:course_app_pw}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
 
 management:
   endpoints:

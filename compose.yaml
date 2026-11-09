@@ -2,14 +2,39 @@
 name: tayjava-microservices
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tayjava
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tayjava}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - tayjava-pg-data:/var/lib/postgresql/data
+      - ./infra/postgres:/docker-entrypoint-initdb.d:ro
+    networks:
+      - tayjava-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U tayjava -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   course-service:
     build:
       context: .
       dockerfile: course-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - tayjava-net
     ports:
       - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/course_db
+      SPRING_DATASOURCE_USERNAME: course_app
+      SPRING_DATASOURCE_PASSWORD: course_app_pw
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
       interval: 10s
@@ -21,10 +46,17 @@ services:
     build:
       context: .
       dockerfile: enrollment-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - tayjava-net
     ports:
       - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/enrollment_db
+      SPRING_DATASOURCE_USERNAME: enrollment_app
+      SPRING_DATASOURCE_PASSWORD: enrollment_app_pw
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
       interval: 10s
@@ -35,3 +67,6 @@ services:
 networks:
   tayjava-net:
     driver: bridge
+
+volumes:
+  tayjava-pg-data:

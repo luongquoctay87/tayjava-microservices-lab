@@ -20,7 +20,7 @@ public class CourseServiceImpl implements CourseService {
 
   @Override
   public List<CourseResp> listPublished() {
-    return courseRepository.findPublished().stream().map(this::toResp).toList();
+    return courseRepository.findByPublishedTrue().stream().map(this::toResp).toList();
   }
 
   @Override
