@@ -2,7 +2,7 @@
 
 Hands-on workspace for the TayJava Microservices series. Each lesson that changes the running system lives on its own branch. Later branches keep everything from the earlier ones.
 
-This branch is **lesson 7**: each service has its own PostgreSQL database. `course-service` uses `course_db` and `enrollment-service` uses `enrollment_db`. There is still no HTTP call between them. Layout follows the TayJava backend: `controller`, `service`, `repository`, `entity`, and a shared `common` module for `Resp` / `ApiResp`.
+This branch is **lesson 8**: Enrollment calls `GET /api/courses/{id}` before it writes a row. The client reads `data` inside the `Resp` envelope. A missing or unpublished course returns `422` `COURSE_NOT_ENROLLABLE`. Course down after retries returns `503` `COURSE_UNAVAILABLE`. Layout follows the TayJava backend: `controller`, `service`, `repository`, `entity`, and a shared `common` module for `Resp` / `ApiResp`.
 
 | Service | Port | Owns |
 |---------|------|------|
@@ -45,6 +45,6 @@ curl -s 'http://localhost:8082/api/enrollments?student=an.student'
 
 A successful call is wrapped as `{ "success": true, "code": "SUCCESS", "message": "...", "data": ... }`. A missing course returns HTTP 404 with `code` `COURSE_NOT_FOUND`.
 
-`docker compose up` needs host ports 5432, 8081, and 8082 free. `mvn test` uses an in-memory H2 database and does not need PostgreSQL. Stopping `course-service` leaves `enrollment-service` running. The HTTP call from Enrollment to Course arrives in lesson 8.
+`docker compose up` needs host ports 5432, 8081, and 8082 free. Inside Compose, Enrollment uses `COURSE_SERVICE_BASE_URL=http://course-service:8081`. On the host the default is `http://localhost:8081`. `mvn test` uses H2 and does not call a live Course process.
 
 Demo users in the article: `an.student` (student) and `bao.teacher` (instructor). This lesson does not enforce roles.

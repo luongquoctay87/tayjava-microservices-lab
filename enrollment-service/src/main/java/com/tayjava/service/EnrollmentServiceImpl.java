@@ -1,5 +1,6 @@
 package com.tayjava.service;
 
+import com.tayjava.client.CourseClient;
 import com.tayjava.common.dto.training.enrollment.EnrollmentReq;
 import com.tayjava.common.dto.training.enrollment.EnrollmentResp;
 import com.tayjava.common.enums.EEnrollmentStatus;
@@ -16,10 +17,12 @@ import org.springframework.stereotype.Service;
 public class EnrollmentServiceImpl implements EnrollmentService {
 
   private final EnrollmentRepository enrollmentRepository;
+  private final CourseClient courseClient;
 
   @Override
   public EnrollmentResp enroll(EnrollmentReq request) {
-    // Does not check that the course exists yet; lesson 8 calls course-service over HTTP.
+    // Network call first, outside the JPA save, so a slow Course does not hold a database connection.
+    courseClient.requirePublished(request.getCourseId());
     Enrollment created =
         enrollmentRepository.save(
             Enrollment.builder()

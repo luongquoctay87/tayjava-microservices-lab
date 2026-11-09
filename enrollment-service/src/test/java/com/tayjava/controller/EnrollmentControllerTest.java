@@ -5,11 +5,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.mockito.Mockito.doThrow;
+
+import com.tayjava.client.CourseClient;
+import com.tayjava.common.enums.ErrorCode;
+import com.tayjava.common.exception.ErrorException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -18,8 +24,10 @@ class EnrollmentControllerTest {
 
   @Autowired private MockMvc mvc;
 
+  @MockitoBean private CourseClient courseClient;
+
   @Test
-  void enrollsStudentWithoutCallingCourseService() throws Exception {
+  void enrollsPublishedCourse() throws Exception {
     mvc.perform(
             post("/api/enrollments")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -53,5 +61,20 @@ class EnrollmentControllerTest {
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":0}"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  void unpublishedCourseIs422() throws Exception {
+    doThrow(
+            new ErrorException(ErrorCode.COURSE_NOT_ENROLLABLE, "Course is not published"))
+        .when(courseClient)
+        .requirePublished(3L);
+
+    mvc.perform(
+            post("/api/enrollments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"studentUsername\":\"an.student\",\"courseId\":3}"))
+        .andExpect(status().isUnprocessableContent())
+        .andExpect(jsonPath("$.code").value("COURSE_NOT_ENROLLABLE"));
   }
 }

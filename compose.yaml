@@ -57,6 +57,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/enrollment_db
       SPRING_DATASOURCE_USERNAME: enrollment_app
       SPRING_DATASOURCE_PASSWORD: enrollment_app_pw
+      COURSE_SERVICE_BASE_URL: http://course-service:8081
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
       interval: 10s

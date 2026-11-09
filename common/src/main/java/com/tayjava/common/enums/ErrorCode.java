@@ -15,6 +15,9 @@ public enum ErrorCode {
   VALIDATION_ERROR("Validation failed", HttpStatus.BAD_REQUEST),
   DATA_NOT_FOUND("Data not found", HttpStatus.NOT_FOUND),
   COURSE_NOT_FOUND("Course not found", HttpStatus.NOT_FOUND),
+  COURSE_NOT_ENROLLABLE("Course cannot be enrolled", HttpStatus.UNPROCESSABLE_CONTENT),
+  COURSE_UNAVAILABLE("Course service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
+  BAD_GATEWAY("Unexpected response from an upstream service", HttpStatus.BAD_GATEWAY),
 
   INTERNAL_SERVER_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 

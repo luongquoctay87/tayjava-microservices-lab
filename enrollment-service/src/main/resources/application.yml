@@ -17,6 +17,14 @@ spring:
         jdbc:
           time_zone: UTC
 
+tayjava:
+  clients:
+    course-base-url: ${COURSE_SERVICE_BASE_URL:http://localhost:8081}
+    course-connect-timeout: 200ms
+    course-read-timeout: 1s
+    course-retry-max-attempts: 3
+    course-retry-backoff: 100ms
+
 management:
   endpoints:
     web:
