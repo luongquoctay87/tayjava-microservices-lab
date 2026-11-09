@@ -2,16 +2,28 @@
 
 Hands-on workspace for the TayJava Microservices series. Each lesson that changes the running system lives on its own branch. Later branches keep everything from the earlier ones.
 
-This branch is **lesson 5**: two Spring Boot 4 processes, in-memory data, no Docker, no database, and no HTTP call between the services. Layout follows the TayJava backend: `controller`, `service`, `repository`, `entity`, and a shared `common` module for `Resp` / `ApiResp`.
+This branch is **lesson 6**: the lesson 5 services, packaged with a multi-stage Dockerfile per module and started together by Docker Compose. Data is still in memory. The services still do not call each other. Layout follows the TayJava backend: `controller`, `service`, `repository`, `entity`, and a shared `common` module for `Resp` / `ApiResp`.
 
 | Service | Port | Owns |
 |---------|------|------|
 | `course-service` | 8081 | courses |
 | `enrollment-service` | 8082 | enrollments (`courseId` only, not the course title) |
 
-## Run
+## Run with Compose
 
-Use two terminals. Do not add `-am`.
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+The image build copies the `common` module because both services depend on it. Healthchecks call `/actuator/health` with `wget` inside the JRE Alpine image.
+
+Stop the stack with `docker compose down`.
+
+## Run from the host
+
+Use two terminals. Do not add `-am` to `spring-boot:run`.
 
 ```bash
 mvn -N install
