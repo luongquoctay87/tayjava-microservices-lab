@@ -2,39 +2,33 @@
 
 Sample multi-module Spring Boot workspace that grows with the **TayJava Microservices** article series.
 
-Readers run **course-service** and **enrollment-service** as separate processes while learning distributed concerns step by step. Each lesson that changes the running system lives on its own git branch. Later branches keep everything from the earlier ones.
-
-This repository is a companion for learning — not the TayJava production backend.
-
-## What you will build
-
-- Two Spring Boot services under package `com.tayjava` (`controller` / `service` / `repository` / `entity`) plus a shared `common` module
-- Shared API envelope (`Resp` / `ApiResp`) and errors (`ErrorException` / `ErrorCode`) aligned with `e-learning`
-- In-memory stores first; later branches add Compose, PostgreSQL per service, HTTP calls between services, and more
-
-## Tech stack
-
-| Area | Choice |
-|------|--------|
-| Language | Java 21 |
-| Framework | Spring Boot 4.0.9 |
-| Web | Spring MVC (`spring-boot-starter-webmvc`) |
-| Build | Maven Wrapper (`./mvnw`) |
-| Persistence (later) | Spring Data JPA, PostgreSQL |
-| Tests | JUnit 5, MockMvc |
-
 ## This branch
 
 | | |
 |---|---|
-| Branch | `master` |
-| Lesson | Base — multi-module Course + Enrollment services (in-memory) |
-| Parent | — |
-| What changed | Parent POM `tayjava-microservices-lab`, `common` envelope/errors, two services with TayJava layering, Maven Wrapper, smoke tests |
+| Branch | `lesson-06-compose` |
+| Lesson | 6 — Docker Compose + multi-stage images |
+| Parent | `master` |
+| What changed | Root `compose.yaml` (project name `tayjava-microservices-lab`), Dockerfile per service with build context that copies `common`, Actuator healthchecks on `/actuator/health`. Data is still in memory; services do not call each other yet. |
 
-## Run
+| Service | Port | Owns |
+|---------|------|------|
+| `course-service` | 8081 | courses |
+| `enrollment-service` | 8082 | enrollments (`courseId` only) |
 
-Requires **JDK 21**.
+## Run with Compose
+
+Requires **JDK 21** for host builds; Compose builds images with Maven Temurin 21.
+
+```bash
+docker compose up --build
+```
+
+The image build copies the `common` module because both services depend on it. Healthchecks call `/actuator/health` with `wget` inside the JRE Alpine image. Discovery between containers later uses Compose DNS service names — not Eureka.
+
+Stop the stack with `docker compose down`.
+
+## Run from the host
 
 ```bash
 ./mvnw -N install
@@ -44,15 +38,20 @@ Requires **JDK 21**.
 ./mvnw -pl enrollment-service spring-boot:run
 ```
 
-| Service | Port |
-|---------|------|
-| `course-service` | `8081` |
-| `enrollment-service` | `8082` |
-
 Do not add `-am` to `spring-boot:run` on a service module.
+
+```bash
+curl -s http://localhost:8081/api/courses
+curl -s http://localhost:8081/actuator/health
+curl -s -X POST http://localhost:8082/api/enrollments \
+  -H 'Content-Type: application/json' \
+  -d '{"studentUsername":"an.student","courseId":1}'
+```
 
 ## Test
 
 ```bash
 ./mvnw -q test
 ```
+
+Demo users: `an.student` (student), `bao.teacher` (instructor). This lesson does not enforce roles.
