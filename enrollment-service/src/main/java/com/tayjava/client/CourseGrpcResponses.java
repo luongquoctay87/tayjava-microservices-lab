@@ -4,6 +4,7 @@ import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
 import com.tayjava.common.grpc.course.GetCourseResponse;
 
+/** Maps gRPC GetCourseResponse to enrollment rules (unit-testable without mocking final stubs). */
 final class CourseGrpcResponses {
   private CourseGrpcResponses() {}
   static void ensurePublished(GetCourseResponse response) {
