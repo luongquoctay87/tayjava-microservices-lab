@@ -11,6 +11,7 @@ spring:
 
 tayjava:
   clients:
+    course-http-client: rest
     course-base-url: http://localhost:8081
     course-connect-timeout: 200ms
     course-read-timeout: 1s

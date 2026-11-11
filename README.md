@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-12-idempotency` |
-| Lesson | 12 — Idempotency on enroll |
-| Parent | `lesson-10-api-contract` |
-| What changed | `Idempotency-Key` required on `POST /api/v1/enrollments`; replay returns the same enrollment; same key + different payload → `409 IDEMPOTENCY_KEY_CONFLICT`. `PaymentStub` charges once per key. Keeps `/api/v1` contract and `ddl/`. |
+| Branch | `lesson-13-restclient-webclient` |
+| Lesson | 13 — RestClient vs WebClient |
+| Parent | `lesson-12-idempotency` |
+| What changed | `CourseClient` is an interface with switchable `RestCourseClient` (default) and `WebCourseClient` via `tayjava.clients.course-http-client=rest\|web` (or `COURSE_HTTP_CLIENT`). Enroll path and Idempotency-Key behavior unchanged. Keeps `ddl/`. |
 
 | Service | Port | Database |
 |---------|------|----------|
@@ -18,13 +18,7 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 ## DDL
 
-See [`ddl/README.md`](ddl/README.md). Compose mounts `ddl/` on an empty Postgres volume. Demo credentials: `.env.example`.
-
-## Run with Compose
-
-```bash
-docker compose up --build
-```
+See [`ddl/README.md`](ddl/README.md).
 
 ## Run from the host
 
@@ -32,11 +26,10 @@ docker compose up --build
 ./mvnw -N install
 ./mvnw -pl common install -DskipTests
 ./mvnw -pl course-service spring-boot:run
-# other terminal
-./mvnw -pl enrollment-service spring-boot:run
+COURSE_HTTP_CLIENT=web ./mvnw -pl enrollment-service spring-boot:run
 ```
 
-Requires **JDK 21**. Host default: `COURSE_SERVICE_BASE_URL=http://localhost:8081`.
+Requires **JDK 21**. Default client stack is RestClient.
 
 ```bash
 curl -s -X POST http://localhost:8082/api/v1/enrollments \
@@ -44,7 +37,6 @@ curl -s -X POST http://localhost:8082/api/v1/enrollments \
   -H 'API-Version: 1' \
   -H 'Idempotency-Key: enroll-alice-course-1' \
   -d '{"studentUsername":"an.student","courseId":1}'
-# repeat with the same key → same enrollment id; payment stub charges once
 ```
 
 ## Test

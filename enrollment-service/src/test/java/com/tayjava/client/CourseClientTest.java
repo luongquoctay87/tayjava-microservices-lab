@@ -19,7 +19,7 @@ import org.springframework.web.client.RestClient;
 class CourseClientTest {
 
   @Test
-  void readsPublishedFromEnvelopeData() {
+  void restClientReadsPublishedFromEnvelopeData() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server
@@ -31,12 +31,12 @@ class CourseClientTest {
                 """,
                 MediaType.APPLICATION_JSON));
 
-    new CourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(1L);
+    new RestCourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(1L);
     server.verify();
   }
 
   @Test
-  void missingCourseIsNotEnrollable() {
+  void restClientMissingCourseIsNotEnrollable() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server.expect(requestTo("/api/v1/courses/9")).andRespond(withResourceNotFound());
@@ -44,12 +44,13 @@ class CourseClientTest {
     ErrorException error =
         assertThrows(
             ErrorException.class,
-            () -> new CourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(9L));
+            () ->
+                new RestCourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(9L));
     assertEquals(ErrorCode.COURSE_NOT_ENROLLABLE, error.getErrorCode());
   }
 
   @Test
-  void unpublishedCourseIsNotEnrollable() {
+  void restClientUnpublishedCourseIsNotEnrollable() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server
@@ -64,12 +65,13 @@ class CourseClientTest {
     ErrorException error =
         assertThrows(
             ErrorException.class,
-            () -> new CourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(3L));
+            () ->
+                new RestCourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(3L));
     assertEquals(ErrorCode.COURSE_NOT_ENROLLABLE, error.getErrorCode());
   }
 
   @Test
-  void retriesTransientFailureThenGivesUp() {
+  void restClientRetriesTransientFailureThenGivesUp() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server
@@ -82,7 +84,8 @@ class CourseClientTest {
     ErrorException error =
         assertThrows(
             ErrorException.class,
-            () -> new CourseClient(builder.build(), 2, Duration.ofMillis(1)).requirePublished(1L));
+            () ->
+                new RestCourseClient(builder.build(), 2, Duration.ofMillis(1)).requirePublished(1L));
     assertEquals(ErrorCode.COURSE_UNAVAILABLE, error.getErrorCode());
     server.verify();
   }

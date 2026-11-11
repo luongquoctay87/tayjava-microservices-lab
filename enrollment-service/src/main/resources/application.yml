@@ -19,6 +19,8 @@ spring:
 
 tayjava:
   clients:
+    # rest (default) or web — switch Enrollment→Course HTTP stack without changing enroll API
+    course-http-client: ${COURSE_HTTP_CLIENT:rest}
     course-base-url: ${COURSE_SERVICE_BASE_URL:http://localhost:8081}
     course-connect-timeout: 200ms
     course-read-timeout: 1s
