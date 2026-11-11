@@ -6,6 +6,7 @@ Each service owns its own PostgreSQL database. There is no shared schema and no 
 |----------|------------|---------|
 | `course_db` | `course_app` | `course-service` |
 | `enrollment_db` | `enrollment_app` | `enrollment-service` |
+| `order_db` | `order_app` | `order-service` |
 
 ## Apply with Compose (recommended)
 

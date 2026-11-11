@@ -6,10 +6,20 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-17-contract-testing` |
-| Lesson | 17 — Spring Cloud Contract |
-| Parent | `lesson-16-bff` |
-| What changed | Provider contracts in `course-service` (`spring-cloud-contract-maven-plugin` + generated `CourseContractTest`). Consumer stub-runner test in `enrollment-service` (`CourseClientContractTest`) uses classpath stubs from the same contract. Runs under `./mvnw test`. Keeps `ddl/`. |
+| Branch | `lesson-19-kafka` |
+| Lesson | 19 — Kafka messaging |
+| Parent | `lesson-17-contract-testing` |
+| What changed | Kafka (KRaft) in Compose; `enrollment-service` publishes `EnrollmentCreatedEvent` to topic `enrollment.events`; new `order-service` (:8084) consumes and creates a course order stub. Shared event DTO in `common`. Keeps `ddl/` (adds `order_db`). Unit tests run with `tayjava.kafka.enabled=false` (no live broker required). |
+
+## Run
+
+```bash
+docker compose up --build
+```
+
+Ports: Course `8081`, Enrollment `8082`, BFF `8083`, Order `8084`, Kafka `9092`.
+
+Demo flow: enroll via Enrollment → event on `enrollment.events` → Order creates a row → `GET /api/v1/orders?student=alice@example.com`.
 
 ## Test
 

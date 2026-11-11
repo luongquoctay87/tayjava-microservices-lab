@@ -11,8 +11,13 @@ spring:
   grpc:
     client:
       enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration
 
 tayjava:
+  kafka:
+    enabled: false
   clients:
     course-transport: rest
     course-base-url: http://localhost:8081

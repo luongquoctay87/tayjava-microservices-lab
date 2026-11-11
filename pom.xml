@@ -23,6 +23,7 @@
     <module>course-service</module>
     <module>enrollment-service</module>
     <module>bff-service</module>
+    <module>order-service</module>
   </modules>
 
   <properties>

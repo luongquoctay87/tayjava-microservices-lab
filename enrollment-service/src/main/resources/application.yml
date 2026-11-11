@@ -22,8 +22,12 @@ spring:
         course:
           address: ${COURSE_SERVICE_GRPC_ADDRESS:static://localhost:9091}
           negotiation-type: plaintext
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
 tayjava:
+  kafka:
+    enabled: true
   clients:
     # grpc (default) | rest | web
     course-transport: ${COURSE_TRANSPORT:grpc}

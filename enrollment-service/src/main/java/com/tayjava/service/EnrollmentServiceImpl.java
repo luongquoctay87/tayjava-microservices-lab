@@ -5,6 +5,7 @@ import com.tayjava.common.dto.training.enrollment.EnrollmentReq;
 import com.tayjava.common.dto.training.enrollment.EnrollmentResp;
 import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
+import com.tayjava.messaging.EnrollmentEventPublisher;
 import com.tayjava.repository.EnrollmentRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -29,6 +30,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   private final EnrollmentWriter enrollmentWriter;
   private final CourseClient courseClient;
   private final PaymentStub paymentStub;
+  private final EnrollmentEventPublisher enrollmentEventPublisher;
 
   @Override
   public EnrollmentResp enroll(EnrollmentReq request, String idempotencyKey) {
@@ -47,7 +49,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     // Network call outside a write transaction so a slow Course does not hold a DB connection.
     courseClient.requirePublished(request.getCourseId());
     paymentStub.chargeOnce(key, request.getStudentUsername(), request.getCourseId());
-    return enrollmentWriter.persistNew(request, ENROLL_SCOPE, key, requestHash);
+    EnrollmentResp created = enrollmentWriter.persistNew(request, ENROLL_SCOPE, key, requestHash);
+    // Lesson 19: best-effort publish after the DB commit of persistNew. Lesson 20 adds outbox.
+    enrollmentEventPublisher.publishEnrollmentCreated(created);
+    return created;
   }
 
   @Override
