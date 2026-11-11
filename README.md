@@ -26,13 +26,13 @@ Stop the stack with `docker compose down`.
 Use two terminals. Do not add `-am` to `spring-boot:run`.
 
 ```bash
-mvn -N install
-mvn -pl common install -DskipTests
-mvn -pl course-service spring-boot:run
-mvn -pl enrollment-service spring-boot:run
+./mvnw -N install
+./mvnw -pl common install -DskipTests
+./mvnw -pl course-service spring-boot:run
+./mvnw -pl enrollment-service spring-boot:run
 ```
 
-`mvn -N install` publishes the parent POM. Without it, a later `spring-boot:run` cannot read `common`. Do not add `-am` to `spring-boot:run`: Maven would also run that goal on the parent POM and fail. Run the two services in separate terminals.
+Requires **JDK 21**. `./mvnw -N install` publishes the parent POM. Without it, a later `spring-boot:run` cannot read `common`. Do not add `-am` to `spring-boot:run`: Maven would also run that goal on the parent POM and fail. Run the two services in separate terminals.
 
 ```bash
 curl -s http://localhost:8081/api/courses
@@ -45,6 +45,6 @@ curl -s 'http://localhost:8082/api/enrollments?student=an.student'
 
 A successful call is wrapped as `{ "success": true, "code": "SUCCESS", "message": "...", "data": ... }`. A missing course returns HTTP 404 with `code` `COURSE_NOT_FOUND`.
 
-`docker compose up` needs host ports 5432, 8081, and 8082 free. Inside Compose, Enrollment uses `COURSE_SERVICE_BASE_URL=http://course-service:8081`. On the host the default is `http://localhost:8081`. `mvn test` uses H2 and does not call a live Course process.
+`docker compose up` needs host ports 5432, 8081, and 8082 free. Inside Compose, Enrollment uses `COURSE_SERVICE_BASE_URL=http://course-service:8081`. On the host the default is `http://localhost:8081`. `./mvnw test` uses H2 and does not call a live Course process.
 
 Demo users in the article: `an.student` (student) and `bao.teacher` (instructor). This lesson does not enforce roles.
