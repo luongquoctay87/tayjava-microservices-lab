@@ -26,7 +26,9 @@ public class EnrollmentController {
   }
 
   @PostMapping
-  public ResponseEntity<Resp<EnrollmentResp>> enroll(@Valid @RequestBody EnrollmentReq request) {
-    return ApiResp.created(enrollmentService.enroll(request));
+  public ResponseEntity<Resp<EnrollmentResp>> enroll(
+      @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+      @Valid @RequestBody EnrollmentReq request) {
+    return ApiResp.created(enrollmentService.enroll(request, idempotencyKey));
   }
 }

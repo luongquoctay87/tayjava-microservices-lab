@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-10-api-contract` |
-| Lesson | 10 — Stable API contract / versioning |
-| Parent | `lesson-08-http-client` |
-| What changed | Public REST moved to `/api/v1/...`; optional `API-Version: 1` header must match when present; response echoes `API-Version`. Enrollment `CourseClient` calls `/api/v1/courses/{id}` with the header. Keeps `ddl/` and Compose DNS (no Eureka). OpenAPI left optional / not required for this lab tip. |
+| Branch | `lesson-12-idempotency` |
+| Lesson | 12 — Idempotency on enroll |
+| Parent | `lesson-10-api-contract` |
+| What changed | `Idempotency-Key` required on `POST /api/v1/enrollments`; replay returns the same enrollment; same key + different payload → `409 IDEMPOTENCY_KEY_CONFLICT`. `PaymentStub` charges once per key. Keeps `/api/v1` contract and `ddl/`. |
 
 | Service | Port | Database |
 |---------|------|----------|
@@ -36,15 +36,15 @@ docker compose up --build
 ./mvnw -pl enrollment-service spring-boot:run
 ```
 
-Requires **JDK 21**. Host default: `COURSE_SERVICE_BASE_URL=http://localhost:8081`. Do not add `-am` to `spring-boot:run`.
+Requires **JDK 21**. Host default: `COURSE_SERVICE_BASE_URL=http://localhost:8081`.
 
 ```bash
 curl -s -X POST http://localhost:8082/api/v1/enrollments \
   -H 'Content-Type: application/json' \
   -H 'API-Version: 1' \
+  -H 'Idempotency-Key: enroll-alice-course-1' \
   -d '{"studentUsername":"an.student","courseId":1}'
-# draft course id 3 → 422 COURSE_NOT_ENROLLABLE
-# API-Version: 2 → 400 UNSUPPORTED_API_VERSION
+# repeat with the same key → same enrollment id; payment stub charges once
 ```
 
 ## Test
@@ -53,6 +53,4 @@ curl -s -X POST http://localhost:8082/api/v1/enrollments \
 ./mvnw -q test
 ```
 
-Tests use H2 and mock `CourseClient` / `MockRestServiceServer` — no live Course process required.
-
-Demo users: `an.student` (student), `bao.teacher` (instructor); emails for later demos: `alice@example.com`, `bob@example.com`.
+Demo users: `an.student` / `bao.teacher`; emails: `alice@example.com`, `bob@example.com`.

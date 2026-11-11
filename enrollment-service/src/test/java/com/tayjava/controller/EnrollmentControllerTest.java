@@ -1,14 +1,19 @@
 package com.tayjava.controller;
 
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import com.tayjava.client.CourseClient;
 import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
+import com.tayjava.service.PaymentStub;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,12 +21,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class EnrollmentControllerTest {
 
   @Autowired private MockMvc mvc;
+  @Autowired private PaymentStub paymentStub;
 
   @MockitoBean private CourseClient courseClient;
 
@@ -29,6 +36,7 @@ class EnrollmentControllerTest {
   void enrollsPublishedCourse() throws Exception {
     mvc.perform(
             post("/api/v1/enrollments")
+                .header("Idempotency-Key", "enroll-alice-1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
         .andExpect(status().isCreated())
@@ -43,9 +51,65 @@ class EnrollmentControllerTest {
   }
 
   @Test
+  void sameIdempotencyKeyReturnsSameEnrollmentWithoutSecondCharge() throws Exception {
+    String body = "{\"studentUsername\":\"bob.student\",\"courseId\":2}";
+    int chargesBefore = paymentStub.chargedKeys();
+
+    MvcResult first =
+        mvc.perform(
+                post("/api/v1/enrollments")
+                    .header("Idempotency-Key", "enroll-bob-2")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+            .andExpect(status().isCreated())
+            .andReturn();
+    int enrollmentId = JsonPath.read(first.getResponse().getContentAsString(), "$.data.id");
+
+    mvc.perform(
+            post("/api/v1/enrollments")
+                .header("Idempotency-Key", "enroll-bob-2")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.data.id").value(enrollmentId));
+
+    verify(courseClient, times(1)).requirePublished(2L);
+    Assertions.assertEquals(chargesBefore + 1, paymentStub.chargedKeys());
+  }
+
+  @Test
+  void sameKeyDifferentPayloadIs409() throws Exception {
+    mvc.perform(
+            post("/api/v1/enrollments")
+                .header("Idempotency-Key", "reuse-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/api/v1/enrollments")
+                .header("Idempotency-Key", "reuse-key")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"studentUsername\":\"an.student\",\"courseId\":2}"))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_CONFLICT"));
+  }
+
+  @Test
+  void missingIdempotencyKeyIs400() throws Exception {
+    mvc.perform(
+            post("/api/v1/enrollments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REQUIRED"));
+  }
+
+  @Test
   void blankUsernameIs400() throws Exception {
     mvc.perform(
             post("/api/v1/enrollments")
+                .header("Idempotency-Key", "blank-user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"  \",\"courseId\":1}"))
         .andExpect(status().isBadRequest())
@@ -56,6 +120,7 @@ class EnrollmentControllerTest {
   void nonPositiveCourseIdIs400() throws Exception {
     mvc.perform(
             post("/api/v1/enrollments")
+                .header("Idempotency-Key", "bad-course")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":0}"))
         .andExpect(status().isBadRequest())
@@ -70,6 +135,7 @@ class EnrollmentControllerTest {
 
     mvc.perform(
             post("/api/v1/enrollments")
+                .header("Idempotency-Key", "draft-course")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":3}"))
         .andExpect(status().isUnprocessableContent())
@@ -84,6 +150,7 @@ class EnrollmentControllerTest {
 
     mvc.perform(
             post("/api/v1/enrollments")
+                .header("Idempotency-Key", "course-down")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
         .andExpect(status().isServiceUnavailable())

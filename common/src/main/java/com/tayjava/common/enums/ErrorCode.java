@@ -19,6 +19,8 @@ public enum ErrorCode {
   COURSE_NOT_ENROLLABLE("Course cannot be enrolled", HttpStatus.UNPROCESSABLE_CONTENT),
   COURSE_UNAVAILABLE("Course service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
   BAD_GATEWAY("Unexpected response from an upstream service", HttpStatus.BAD_GATEWAY),
+  IDEMPOTENCY_KEY_REQUIRED("Idempotency-Key header is required", HttpStatus.BAD_REQUEST),
+  IDEMPOTENCY_KEY_CONFLICT("Idempotency key reused with a different payload", HttpStatus.CONFLICT),
 
   INTERNAL_SERVER_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 

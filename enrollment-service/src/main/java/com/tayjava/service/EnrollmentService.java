@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface EnrollmentService {
 
-  EnrollmentResp enroll(EnrollmentReq request);
+  EnrollmentResp enroll(EnrollmentReq request, String idempotencyKey);
 
   List<EnrollmentResp> getByStudentUsername(String studentUsername);
 }
