@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-19-kafka` |
-| Lesson | 19 — Kafka messaging |
-| Parent | `lesson-17-contract-testing` |
-| What changed | Kafka (KRaft) in Compose; `enrollment-service` publishes `EnrollmentCreatedEvent` to topic `enrollment.events`; new `order-service` (:8084) consumes and creates a course order stub. Shared event DTO in `common`. Keeps `ddl/` (adds `order_db`). Unit tests run with `tayjava.kafka.enabled=false` (no live broker required). |
+| Branch | `lesson-20-outbox` |
+| Lesson | 20 — Transactional outbox |
+| Parent | `lesson-19-kafka` |
+| What changed | Enrollment writes `outbox_events` in the same DB transaction as the enrollment row; `OutboxRelay` polls PENDING rows and publishes `EnrollmentCreatedEvent` to Kafka. Keeps Compose Kafka + `order-service` consumer. Unit tests disable the broker and use a recording sender. |
 
 ## Run
 
@@ -18,8 +18,6 @@ docker compose up --build
 ```
 
 Ports: Course `8081`, Enrollment `8082`, BFF `8083`, Order `8084`, Kafka `9092`.
-
-Demo flow: enroll via Enrollment → event on `enrollment.events` → Order creates a row → `GET /api/v1/orders?student=alice@example.com`.
 
 ## Test
 

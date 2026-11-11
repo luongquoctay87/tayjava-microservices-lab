@@ -7,6 +7,7 @@ import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
 import com.tayjava.entity.Enrollment;
 import com.tayjava.entity.IdempotencyRecord;
+import com.tayjava.messaging.OutboxAppender;
 import com.tayjava.repository.EnrollmentRepository;
 import com.tayjava.repository.IdempotencyRecordRepository;
 import java.util.Optional;
@@ -22,6 +23,7 @@ class EnrollmentWriter {
 
   private final EnrollmentRepository enrollmentRepository;
   private final IdempotencyRecordRepository idempotencyRecordRepository;
+  private final OutboxAppender outboxAppender;
 
   @Transactional(readOnly = true)
   Optional<EnrollmentResp> findReplay(String scope, String key, String requestHash) {
@@ -64,13 +66,16 @@ class EnrollmentWriter {
             .requestHash(requestHash)
             .enrollmentId(created.getId())
             .build());
+    EnrollmentResp resp = toResp(created);
+    // Same DB transaction as enrollment — relay publishes to Kafka asynchronously.
+    outboxAppender.appendEnrollmentCreated(resp);
     log.info(
         "Enrolled student={} courseId={} enrollmentId={} idempotencyKey={}",
         created.getStudentUsername(),
         created.getCourseId(),
         created.getId(),
         key);
-    return toResp(created);
+    return resp;
   }
 
   private EnrollmentResp toResp(Enrollment enrollment) {

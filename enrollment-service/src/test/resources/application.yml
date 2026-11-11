@@ -15,9 +15,13 @@ spring:
     exclude:
       - org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration
 
+spring.task.scheduling.enabled: false
+
 tayjava:
   kafka:
     enabled: false
+  outbox:
+    poll-ms: 60000
   clients:
     course-transport: rest
     course-base-url: http://localhost:8081
