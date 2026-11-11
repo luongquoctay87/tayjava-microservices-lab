@@ -12,10 +12,10 @@
   </parent>
 
   <groupId>com.tayjava</groupId>
-  <artifactId>tayjava-microservices</artifactId>
+  <artifactId>tayjava-microservices-lab</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>tayjava-microservices</name>
+  <name>tayjava-microservices-lab</name>
   <description>Hands-on workspace for the TayJava Microservices series</description>
 
   <modules>

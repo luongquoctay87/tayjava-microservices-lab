@@ -1,5 +1,5 @@
 # File: compose.yaml
-name: tayjava-microservices
+name: tayjava-microservices-lab
 
 services:
   postgres:

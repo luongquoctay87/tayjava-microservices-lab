@@ -1,4 +1,4 @@
-# tayjava-microservices
+# tayjava-microservices-lab
 
 Hands-on workspace for the TayJava Microservices series. Each lesson that changes the running system lives on its own branch. Later branches keep everything from the earlier ones.
 
