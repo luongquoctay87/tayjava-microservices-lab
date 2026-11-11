@@ -3,8 +3,6 @@ package com.tayjava.client;
 import com.tayjava.common.ApiVersions;
 import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
-import java.time.Duration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
@@ -12,38 +10,30 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
 /**
- * Course client backed by {@link WebClient}. Enrollment remains a servlet app, so the reactive
- * chain is blocked at the boundary — useful for comparing APIs side-by-side with RestClient.
+ * Course transport backed by {@link WebClient}. Enrollment remains servlet-based, so the reactive
+ * chain is blocked at the boundary. Retry / CB / bulkhead live in {@link ResilientCourseClient}.
  */
 @Component
 @ConditionalOnProperty(prefix = "tayjava.clients", name = "course-transport", havingValue = "web")
-public class WebCourseClient implements CourseClient {
+public class WebCourseClient implements CourseTransport {
 
   private final WebClient courseWebClient;
-  private final int maxAttempts;
-  private final Duration backoff;
 
-  public WebCourseClient(
-      WebClient courseWebClient,
-      @Value("${tayjava.clients.course-retry-max-attempts}") int maxAttempts,
-      @Value("${tayjava.clients.course-retry-backoff}") Duration backoff) {
+  public WebCourseClient(WebClient courseWebClient) {
     this.courseWebClient = courseWebClient;
-    this.maxAttempts = maxAttempts;
-    this.backoff = backoff;
   }
 
   @Override
   public void requirePublished(Long courseId) {
-    CoursePayload course = fetchWithRetry(courseId);
+    CoursePayload course = fetchOnce(courseId);
     if (course.getPublished() == null || !course.getPublished()) {
       throw new ErrorException(ErrorCode.COURSE_NOT_ENROLLABLE, "Course is not published");
     }
   }
 
-  private CoursePayload fetchWithRetry(Long courseId) {
+  private CoursePayload fetchOnce(Long courseId) {
     try {
       CourseEnvelope body =
           courseWebClient
@@ -60,20 +50,9 @@ public class WebCourseClient implements CourseClient {
                   HttpStatusCode::is5xxServerError,
                   response ->
                       Mono.error(
-                          new WebClientResponseException(
-                              response.statusCode().value(),
-                              "Course upstream error",
-                              null,
-                              null,
-                              null)))
+                          new ErrorException(
+                              ErrorCode.COURSE_UNAVAILABLE, "Course service unavailable")))
               .bodyToMono(CourseEnvelope.class)
-              .retryWhen(
-                  Retry.backoff(Math.max(0, maxAttempts - 1), backoff)
-                      .filter(this::isTransient)
-                      .onRetryExhaustedThrow(
-                          (spec, signal) ->
-                              new ErrorException(
-                                  ErrorCode.COURSE_UNAVAILABLE, "Course service unavailable")))
               .block();
       if (body == null || body.getData() == null) {
         throw new ErrorException(ErrorCode.BAD_GATEWAY, "Empty course response");
@@ -91,13 +70,5 @@ public class WebCourseClient implements CourseClient {
       }
       throw new ErrorException(ErrorCode.BAD_GATEWAY, "Unexpected response from course service");
     }
-  }
-
-  private boolean isTransient(Throwable ex) {
-    if (ex instanceof WebClientResponseException response) {
-      int status = response.getStatusCode().value();
-      return status == 502 || status == 503 || status == 504;
-    }
-    return ex instanceof WebClientRequestException;
   }
 }

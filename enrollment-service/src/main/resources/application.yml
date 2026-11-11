@@ -30,8 +30,27 @@ tayjava:
     course-base-url: ${COURSE_SERVICE_BASE_URL:http://localhost:8081}
     course-connect-timeout: 200ms
     course-read-timeout: 1s
-    course-retry-max-attempts: 3
-    course-retry-backoff: 100ms
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      course:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      course:
+        maxAttempts: 3
+        waitDuration: 50ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+  bulkhead:
+    instances:
+      course:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 0
 
 management:
   endpoints:

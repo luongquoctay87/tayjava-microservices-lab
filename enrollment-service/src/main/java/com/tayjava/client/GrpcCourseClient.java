@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
     name = "course-transport",
     havingValue = "grpc",
     matchIfMissing = true)
-public class GrpcCourseClient implements CourseClient {
+public class GrpcCourseClient implements CourseTransport {
 
   private final CourseInternalGrpc.CourseInternalBlockingStub courseInternalStub;
 

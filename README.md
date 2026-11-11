@@ -6,15 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-14-grpc` |
-| Lesson | 14 — gRPC internal Course↔Enrollment |
-| Parent | `lesson-13-restclient-webclient` |
-| What changed | Shared `course.proto` in `common`; Course exposes gRPC `CourseInternal.GetCourse` on `:9091` while keeping public REST `/api/v1`. Enrollment defaults to `GrpcCourseClient` (`COURSE_TRANSPORT=grpc`); `rest` / `web` still switchable. Keeps `ddl/`. |
-
-| Service | Port | Notes |
-|---------|------|-------|
-| `course-service` | 8081 REST / 9091 gRPC | `course_db` |
-| `enrollment-service` | 8082 | `enrollment_db` |
+| Branch | `lesson-15-resilience4j` |
+| Lesson | 15 — Resilience4j on outbound Course client |
+| Parent | `lesson-14-grpc` |
+| What changed | `resilience4j-spring-boot4` circuit breaker / retry / bulkhead on `ResilientCourseClient` wrapping `CourseTransport` (grpc\|rest\|web). Retries only `COURSE_UNAVAILABLE`; business `COURSE_NOT_ENROLLABLE` is not retried. Keeps `ddl/`. |
 
 ## Test
 

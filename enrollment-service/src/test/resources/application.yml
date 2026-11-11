@@ -14,10 +14,25 @@ spring:
 
 tayjava:
   clients:
-    # Tests mock CourseClient; keep HTTP RestClient available for unit client tests.
     course-transport: rest
     course-base-url: http://localhost:8081
     course-connect-timeout: 200ms
     course-read-timeout: 1s
-    course-retry-max-attempts: 3
-    course-retry-backoff: 1ms
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      course:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 1s
+  retry:
+    instances:
+      course:
+        maxAttempts: 2
+        waitDuration: 1ms
+  bulkhead:
+    instances:
+      course:
+        maxConcurrentCalls: 20
+        maxWaitDuration: 0

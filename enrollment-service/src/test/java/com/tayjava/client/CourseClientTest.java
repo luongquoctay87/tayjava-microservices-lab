@@ -9,7 +9,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
-import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +30,7 @@ class CourseClientTest {
                 """,
                 MediaType.APPLICATION_JSON));
 
-    new RestCourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(1L);
+    new RestCourseClient(builder.build()).requirePublished(1L);
     server.verify();
   }
 
@@ -43,9 +42,7 @@ class CourseClientTest {
 
     ErrorException error =
         assertThrows(
-            ErrorException.class,
-            () ->
-                new RestCourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(9L));
+            ErrorException.class, () -> new RestCourseClient(builder.build()).requirePublished(9L));
     assertEquals(ErrorCode.COURSE_NOT_ENROLLABLE, error.getErrorCode());
   }
 
@@ -64,28 +61,21 @@ class CourseClientTest {
 
     ErrorException error =
         assertThrows(
-            ErrorException.class,
-            () ->
-                new RestCourseClient(builder.build(), 1, Duration.ofMillis(1)).requirePublished(3L));
+            ErrorException.class, () -> new RestCourseClient(builder.build()).requirePublished(3L));
     assertEquals(ErrorCode.COURSE_NOT_ENROLLABLE, error.getErrorCode());
   }
 
   @Test
-  void restClientRetriesTransientFailureThenGivesUp() {
+  void restClientMapsUnavailableStatus() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-    server
-        .expect(requestTo("/api/v1/courses/1"))
-        .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
     server
         .expect(requestTo("/api/v1/courses/1"))
         .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
 
     ErrorException error =
         assertThrows(
-            ErrorException.class,
-            () ->
-                new RestCourseClient(builder.build(), 2, Duration.ofMillis(1)).requirePublished(1L));
+            ErrorException.class, () -> new RestCourseClient(builder.build()).requirePublished(1L));
     assertEquals(ErrorCode.COURSE_UNAVAILABLE, error.getErrorCode());
     server.verify();
   }

@@ -14,10 +14,12 @@ import org.springframework.test.context.TestPropertySource;
     })
 class CourseClientSwitchTest {
 
+  @Autowired private CourseTransport courseTransport;
   @Autowired private CourseClient courseClient;
 
   @Test
-  void selectsWebCourseClientWhenConfigured() {
-    Assertions.assertInstanceOf(WebCourseClient.class, courseClient);
+  void selectsWebTransportAndResilientFacade() {
+    Assertions.assertInstanceOf(WebCourseClient.class, courseTransport);
+    Assertions.assertInstanceOf(ResilientCourseClient.class, courseClient);
   }
 }
