@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-21-inbox` |
-| Lesson | 21 — Inbox / consumer dedup |
-| Parent | `lesson-20-outbox` |
-| What changed | `order-service` stores processed Kafka `event_id` in `inbox_events` before creating an order. Duplicate deliveries are skipped (at-least-once safe). Keeps outbox publisher and Compose Kafka. |
+| Branch | `lesson-22-saga` |
+| Lesson | 22 — Saga (course purchase) |
+| Parent | `lesson-21-inbox` |
+| What changed | **Orchestration** saga for purchasing a course (`POST /api/v1/purchases`): validate course → create order intent → charge payment → confirm enrollment (writes outbox). Compensates on failure (refund + cancel order). Chosen style: **orchestration** (central `PurchaseSagaOrchestrator`), not choreography. Demo decline: `bob@example.com`. |
 
 ## Run
 

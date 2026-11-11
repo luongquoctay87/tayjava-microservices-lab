@@ -33,4 +33,12 @@ public class PaymentStub {
   public int chargedKeys() {
     return chargesByKey.size();
   }
+  public void refund(String idempotencyKey) {
+    if (chargesByKey.remove(idempotencyKey) != null) {
+      log.info("Payment stub refunded key={}", idempotencyKey);
+    }
+  }
+  public boolean wasCharged(String idempotencyKey) {
+    return chargesByKey.containsKey(idempotencyKey);
+  }
 }

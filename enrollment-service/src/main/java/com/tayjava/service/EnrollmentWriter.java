@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 @Slf4j(topic = "EnrollmentWriter")
-class EnrollmentWriter {
+public class EnrollmentWriter {
 
   private final EnrollmentRepository enrollmentRepository;
   private final IdempotencyRecordRepository idempotencyRecordRepository;
@@ -45,7 +45,7 @@ class EnrollmentWriter {
   }
 
   @Transactional
-  EnrollmentResp persistNew(
+  public EnrollmentResp persistNew(
       EnrollmentReq request, String scope, String key, String requestHash) {
     Optional<EnrollmentResp> race = findReplay(scope, key, requestHash);
     if (race.isPresent()) {

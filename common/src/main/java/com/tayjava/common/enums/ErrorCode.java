@@ -21,6 +21,8 @@ public enum ErrorCode {
   BAD_GATEWAY("Unexpected response from an upstream service", HttpStatus.BAD_GATEWAY),
   IDEMPOTENCY_KEY_REQUIRED("Idempotency-Key header is required", HttpStatus.BAD_REQUEST),
   IDEMPOTENCY_KEY_CONFLICT("Idempotency key reused with a different payload", HttpStatus.CONFLICT),
+  SAGA_FAILED("Purchase saga failed", HttpStatus.UNPROCESSABLE_CONTENT),
+  PAYMENT_DECLINED("Payment declined", HttpStatus.UNPROCESSABLE_CONTENT),
 
   INTERNAL_SERVER_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 

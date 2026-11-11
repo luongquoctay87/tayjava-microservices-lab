@@ -28,12 +28,7 @@ public class GrpcCourseClient implements CourseTransport {
     try {
       GetCourseResponse response =
           courseInternalStub.getCourse(GetCourseRequest.newBuilder().setCourseId(courseId).build());
-      if (!response.getFound()) {
-        throw new ErrorException(ErrorCode.COURSE_NOT_ENROLLABLE, "Course not found");
-      }
-      if (!response.getPublished()) {
-        throw new ErrorException(ErrorCode.COURSE_NOT_ENROLLABLE, "Course is not published");
-      }
+      CourseGrpcResponses.ensurePublished(response);
     } catch (ErrorException ex) {
       throw ex;
     } catch (StatusRuntimeException ex) {
