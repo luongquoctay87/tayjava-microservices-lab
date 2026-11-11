@@ -23,7 +23,7 @@ class CourseClientTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server
-        .expect(requestTo("/api/courses/1"))
+        .expect(requestTo("/api/v1/courses/1"))
         .andRespond(
             withSuccess(
                 """
@@ -39,7 +39,7 @@ class CourseClientTest {
   void missingCourseIsNotEnrollable() {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-    server.expect(requestTo("/api/courses/9")).andRespond(withResourceNotFound());
+    server.expect(requestTo("/api/v1/courses/9")).andRespond(withResourceNotFound());
 
     ErrorException error =
         assertThrows(
@@ -53,7 +53,7 @@ class CourseClientTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server
-        .expect(requestTo("/api/courses/3"))
+        .expect(requestTo("/api/v1/courses/3"))
         .andRespond(
             withSuccess(
                 """
@@ -73,10 +73,10 @@ class CourseClientTest {
     RestClient.Builder builder = RestClient.builder();
     MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
     server
-        .expect(requestTo("/api/courses/1"))
+        .expect(requestTo("/api/v1/courses/1"))
         .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
     server
-        .expect(requestTo("/api/courses/1"))
+        .expect(requestTo("/api/v1/courses/1"))
         .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
 
     ErrorException error =

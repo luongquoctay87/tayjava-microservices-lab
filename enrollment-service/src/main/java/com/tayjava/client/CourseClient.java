@@ -1,6 +1,7 @@
 package com.tayjava.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tayjava.common.ApiVersions;
 import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
 import java.time.Duration;
@@ -57,7 +58,8 @@ public class CourseClient {
       CourseEnvelope body =
           courseRestClient
               .get()
-              .uri("/api/courses/{id}", courseId)
+              .uri(ApiVersions.PATH_V1 + "/courses/{id}", courseId)
+              .header(ApiVersions.HEADER, ApiVersions.V1)
               .retrieve()
               .body(CourseEnvelope.class);
       if (body == null || body.getData() == null) {

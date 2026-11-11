@@ -28,7 +28,7 @@ class EnrollmentControllerTest {
   @Test
   void enrollsPublishedCourse() throws Exception {
     mvc.perform(
-            post("/api/enrollments")
+            post("/api/v1/enrollments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
         .andExpect(status().isCreated())
@@ -37,7 +37,7 @@ class EnrollmentControllerTest {
         .andExpect(jsonPath("$.data.courseId").value(1))
         .andExpect(jsonPath("$.data.status").value("APPROVED"));
 
-    mvc.perform(get("/api/enrollments").param("student", "an.student"))
+    mvc.perform(get("/api/v1/enrollments").param("student", "an.student"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].studentUsername").value("an.student"));
   }
@@ -45,7 +45,7 @@ class EnrollmentControllerTest {
   @Test
   void blankUsernameIs400() throws Exception {
     mvc.perform(
-            post("/api/enrollments")
+            post("/api/v1/enrollments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"  \",\"courseId\":1}"))
         .andExpect(status().isBadRequest())
@@ -55,7 +55,7 @@ class EnrollmentControllerTest {
   @Test
   void nonPositiveCourseIdIs400() throws Exception {
     mvc.perform(
-            post("/api/enrollments")
+            post("/api/v1/enrollments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":0}"))
         .andExpect(status().isBadRequest())
@@ -69,7 +69,7 @@ class EnrollmentControllerTest {
         .requirePublished(3L);
 
     mvc.perform(
-            post("/api/enrollments")
+            post("/api/v1/enrollments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":3}"))
         .andExpect(status().isUnprocessableContent())
@@ -83,7 +83,7 @@ class EnrollmentControllerTest {
         .requirePublished(1L);
 
     mvc.perform(
-            post("/api/enrollments")
+            post("/api/v1/enrollments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
         .andExpect(status().isServiceUnavailable())

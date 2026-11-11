@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-08-http-client` |
-| Lesson | 8 — Enrollment → Course HTTP client |
-| Parent | `lesson-07-database-per-service` |
-| What changed | `CourseClient` (`RestClient`) with connect/read timeouts and bounded retry; enroll checks published course first; unpublished/missing → `422` `COURSE_NOT_ENROLLABLE`; Course down after retries → `503` `COURSE_UNAVAILABLE`. Compose sets `COURSE_SERVICE_BASE_URL=http://course-service:8081` (DNS, not Eureka). Keeps `ddl/`. |
+| Branch | `lesson-10-api-contract` |
+| Lesson | 10 — Stable API contract / versioning |
+| Parent | `lesson-08-http-client` |
+| What changed | Public REST moved to `/api/v1/...`; optional `API-Version: 1` header must match when present; response echoes `API-Version`. Enrollment `CourseClient` calls `/api/v1/courses/{id}` with the header. Keeps `ddl/` and Compose DNS (no Eureka). OpenAPI left optional / not required for this lab tip. |
 
 | Service | Port | Database |
 |---------|------|----------|
@@ -26,8 +26,6 @@ See [`ddl/README.md`](ddl/README.md). Compose mounts `ddl/` on an empty Postgres
 docker compose up --build
 ```
 
-Enrollment waits until Course is healthy, then calls it over the Compose network.
-
 ## Run from the host
 
 ```bash
@@ -41,10 +39,12 @@ Enrollment waits until Course is healthy, then calls it over the Compose network
 Requires **JDK 21**. Host default: `COURSE_SERVICE_BASE_URL=http://localhost:8081`. Do not add `-am` to `spring-boot:run`.
 
 ```bash
-curl -s -X POST http://localhost:8082/api/enrollments \
+curl -s -X POST http://localhost:8082/api/v1/enrollments \
   -H 'Content-Type: application/json' \
+  -H 'API-Version: 1' \
   -d '{"studentUsername":"an.student","courseId":1}'
 # draft course id 3 → 422 COURSE_NOT_ENROLLABLE
+# API-Version: 2 → 400 UNSUPPORTED_API_VERSION
 ```
 
 ## Test
@@ -55,4 +55,4 @@ curl -s -X POST http://localhost:8082/api/enrollments \
 
 Tests use H2 and mock `CourseClient` / `MockRestServiceServer` — no live Course process required.
 
-Demo users: `an.student` (student), `bao.teacher` (instructor). This lesson does not enforce roles.
+Demo users: `an.student` (student), `bao.teacher` (instructor); emails for later demos: `alice@example.com`, `bob@example.com`.
