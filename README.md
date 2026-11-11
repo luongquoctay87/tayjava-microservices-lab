@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-20-outbox` |
-| Lesson | 20 — Transactional outbox |
-| Parent | `lesson-19-kafka` |
-| What changed | Enrollment writes `outbox_events` in the same DB transaction as the enrollment row; `OutboxRelay` polls PENDING rows and publishes `EnrollmentCreatedEvent` to Kafka. Keeps Compose Kafka + `order-service` consumer. Unit tests disable the broker and use a recording sender. |
+| Branch | `lesson-21-inbox` |
+| Lesson | 21 — Inbox / consumer dedup |
+| Parent | `lesson-20-outbox` |
+| What changed | `order-service` stores processed Kafka `event_id` in `inbox_events` before creating an order. Duplicate deliveries are skipped (at-least-once safe). Keeps outbox publisher and Compose Kafka. |
 
 ## Run
 

@@ -3,6 +3,7 @@ package com.tayjava.service;
 import com.tayjava.common.dto.event.EnrollmentCreatedEvent;
 import com.tayjava.common.dto.order.OrderResp;
 import com.tayjava.entity.CourseOrder;
+import com.tayjava.messaging.InboxGuard;
 import com.tayjava.repository.CourseOrderRepository;
 import java.time.Instant;
 import java.util.List;
@@ -17,10 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderServiceImpl implements OrderService {
 
   private final CourseOrderRepository courseOrderRepository;
+  private final InboxGuard inboxGuard;
 
   @Override
   @Transactional
   public OrderResp createFromEnrollmentEvent(EnrollmentCreatedEvent event) {
+    if (!inboxGuard.claim(event.eventId(), "EnrollmentCreated")) {
+      return courseOrderRepository
+          .findByEnrollmentId(event.enrollmentId())
+          .map(this::toResp)
+          .orElse(null);
+    }
     return courseOrderRepository
         .findByEnrollmentId(event.enrollmentId())
         .map(this::toResp)
