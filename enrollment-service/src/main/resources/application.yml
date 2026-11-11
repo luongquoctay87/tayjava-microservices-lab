@@ -4,6 +4,18 @@ server:
 spring:
   application:
     name: enrollment-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/enrollment_db}
+    username: ${SPRING_DATASOURCE_USERNAME:enrollment_app}
+    password: ${SPRING_DATASOURCE_PASSWORD:enrollment_app_pw}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
 
 management:
   endpoints:

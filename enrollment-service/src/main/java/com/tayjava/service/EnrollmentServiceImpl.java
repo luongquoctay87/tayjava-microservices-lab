@@ -9,6 +9,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   private final EnrollmentRepository enrollmentRepository;
 
   @Override
+  @Transactional
   public EnrollmentResp enroll(EnrollmentReq request) {
     // Does not check that the course exists yet; lesson 8 calls course-service over HTTP.
     Enrollment created =
@@ -36,6 +38,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<EnrollmentResp> getByStudentUsername(String studentUsername) {
     return enrollmentRepository.findByStudentUsername(studentUsername).stream()
         .map(this::toResp)

@@ -1,12 +1,20 @@
 package com.tayjava.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Course owned by course-service. In-memory until lesson 7. */
+/** Course owned by course-service. Stored only in course_db. */
+@Entity
+@Table(name = "courses")
 @Getter
 @Setter
 @Builder
@@ -14,9 +22,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Course {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @Column(nullable = false, unique = true, length = 100)
   private String slug;
+
+  @Column(nullable = false, length = 255)
   private String title;
+
+  @Column(name = "instructor_username", nullable = false, length = 100)
   private String instructorUsername;
+
+  @Column(nullable = false)
   private boolean published;
 }

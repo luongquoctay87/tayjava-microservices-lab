@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +20,13 @@ public class CourseServiceImpl implements CourseService {
   private final CourseRepository courseRepository;
 
   @Override
+  @Transactional(readOnly = true)
   public List<CourseResp> listPublished() {
-    return courseRepository.findPublished().stream().map(this::toResp).toList();
+    return courseRepository.findByPublishedTrue().stream().map(this::toResp).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public CourseResp getById(Long id) {
     return courseRepository
         .findById(id)
@@ -32,6 +35,7 @@ public class CourseServiceImpl implements CourseService {
   }
 
   @Override
+  @Transactional
   public CourseResp create(CourseReq request) {
     // No Spring Security yet: open until lessons 28–29 lock this to the instructor role.
     Course created =

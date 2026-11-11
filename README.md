@@ -6,29 +6,37 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-06-compose` |
-| Lesson | 6 — Docker Compose + multi-stage images |
-| Parent | `master` |
-| What changed | Root `compose.yaml` (project name `tayjava-microservices-lab`), Dockerfile per service with build context that copies `common`, Actuator healthchecks on `/actuator/health`. Data is still in memory; services do not call each other yet. |
+| Branch | `lesson-07-database-per-service` |
+| Lesson | 7 — PostgreSQL database per service + JPA |
+| Parent | `lesson-06-compose` |
+| What changed | One Postgres instance with `course_db` and `enrollment_db` (`ddl/`), Spring Data JPA repositories replace in-memory stores, Compose wires datasource env vars, H2 for tests. Services still do not call each other. |
 
-| Service | Port | Owns |
-|---------|------|------|
-| `course-service` | 8081 | courses |
-| `enrollment-service` | 8082 | enrollments (`courseId` only) |
+| Service | Port | Database |
+|---------|------|----------|
+| `course-service` | 8081 | `course_db` |
+| `enrollment-service` | 8082 | `enrollment_db` |
+
+## DDL
+
+See [`ddl/README.md`](ddl/README.md). Compose mounts `ddl/` into Postgres init on an empty volume. Demo passwords live in `ddl/01-init-databases.sql` and `.env.example` — not for production.
+
+```bash
+# re-run init scripts
+docker compose down -v
+docker compose up --build
+```
 
 ## Run with Compose
-
-Requires **JDK 21** for host builds; Compose builds images with Maven Temurin 21.
 
 ```bash
 docker compose up --build
 ```
 
-The image build copies the `common` module because both services depend on it. Healthchecks call `/actuator/health` with `wget` inside the JRE Alpine image. Discovery between containers later uses Compose DNS service names — not Eureka.
-
-Stop the stack with `docker compose down`.
+Needs host ports `5432`, `8081`, and `8082` free. Discovery between containers uses Compose DNS (`postgres`, `course-service`, …) — not Eureka.
 
 ## Run from the host
+
+Start Postgres via Compose (or apply `ddl/` manually), then:
 
 ```bash
 ./mvnw -N install
@@ -38,20 +46,14 @@ Stop the stack with `docker compose down`.
 ./mvnw -pl enrollment-service spring-boot:run
 ```
 
-Do not add `-am` to `spring-boot:run` on a service module.
-
-```bash
-curl -s http://localhost:8081/api/courses
-curl -s http://localhost:8081/actuator/health
-curl -s -X POST http://localhost:8082/api/enrollments \
-  -H 'Content-Type: application/json' \
-  -d '{"studentUsername":"an.student","courseId":1}'
-```
+Requires **JDK 21**. Do not add `-am` to `spring-boot:run`.
 
 ## Test
 
 ```bash
 ./mvnw -q test
 ```
+
+Tests use in-memory H2 and do not need PostgreSQL.
 
 Demo users: `an.student` (student), `bao.teacher` (instructor). This lesson does not enforce roles.
