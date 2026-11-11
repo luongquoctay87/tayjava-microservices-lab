@@ -1,0 +1,33 @@
+spring:
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 200
+            response-timeout: 1s
+          routes:
+            - id: course
+              uri: ${COURSE_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/v1/courses,/api/v1/courses/**
+            - id: enrollment
+              uri: ${ENROLLMENT_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/v1/enrollments,/api/v1/enrollments/**,/api/v1/purchases,/api/v1/purchases/**
+            - id: order
+              uri: ${ORDER_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/v1/orders,/api/v1/orders/**
+            - id: bff
+              uri: ${BFF_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/v1/me,/api/v1/me/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

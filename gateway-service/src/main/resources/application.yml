@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 1000
+            response-timeout: 2s
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "http://localhost:3000"
+                allowedMethods: "GET,POST,PUT,DELETE,OPTIONS"
+                allowedHeaders: "*"
+          routes:
+            - id: course
+              uri: ${COURSE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/courses,/api/v1/courses/**
+            - id: enrollment
+              uri: ${ENROLLMENT_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/enrollments,/api/v1/enrollments/**,/api/v1/purchases,/api/v1/purchases/**
+            - id: order
+              uri: ${ORDER_URI:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/orders,/api/v1/orders/**
+            - id: bff
+              uri: ${BFF_URI:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/me,/api/v1/me/**
+
+management:
+  endpoint:
+    gateway:
+      access: read_only
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

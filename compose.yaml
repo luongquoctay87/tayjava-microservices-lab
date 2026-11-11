@@ -148,6 +148,26 @@ services:
       retries: 6
       start_period: 40s
 
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
+    networks:
+      - tayjava-net
+    ports:
+      - "8080:8080"
+    environment:
+      COURSE_URI: http://course-service:8081
+      ENROLLMENT_URI: http://enrollment-service:8082
+      ORDER_URI: http://order-service:8084
+      BFF_URI: http://bff-service:8083
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 40s
+
 networks:
   tayjava-net:
     driver: bridge
