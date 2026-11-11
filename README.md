@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-07-database-per-service` |
-| Lesson | 7 — PostgreSQL database per service + JPA |
-| Parent | `lesson-06-compose` |
-| What changed | One Postgres instance with `course_db` and `enrollment_db` (`ddl/`), Spring Data JPA repositories replace in-memory stores, Compose wires datasource env vars, H2 for tests. Services still do not call each other. |
+| Branch | `lesson-08-http-client` |
+| Lesson | 8 — Enrollment → Course HTTP client |
+| Parent | `lesson-07-database-per-service` |
+| What changed | `CourseClient` (`RestClient`) with connect/read timeouts and bounded retry; enroll checks published course first; unpublished/missing → `422` `COURSE_NOT_ENROLLABLE`; Course down after retries → `503` `COURSE_UNAVAILABLE`. Compose sets `COURSE_SERVICE_BASE_URL=http://course-service:8081` (DNS, not Eureka). Keeps `ddl/`. |
 
 | Service | Port | Database |
 |---------|------|----------|
@@ -18,13 +18,7 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 ## DDL
 
-See [`ddl/README.md`](ddl/README.md). Compose mounts `ddl/` into Postgres init on an empty volume. Demo passwords live in `ddl/01-init-databases.sql` and `.env.example` — not for production.
-
-```bash
-# re-run init scripts
-docker compose down -v
-docker compose up --build
-```
+See [`ddl/README.md`](ddl/README.md). Compose mounts `ddl/` on an empty Postgres volume. Demo credentials: `.env.example`.
 
 ## Run with Compose
 
@@ -32,11 +26,9 @@ docker compose up --build
 docker compose up --build
 ```
 
-Needs host ports `5432`, `8081`, and `8082` free. Discovery between containers uses Compose DNS (`postgres`, `course-service`, …) — not Eureka.
+Enrollment waits until Course is healthy, then calls it over the Compose network.
 
 ## Run from the host
-
-Start Postgres via Compose (or apply `ddl/` manually), then:
 
 ```bash
 ./mvnw -N install
@@ -46,7 +38,14 @@ Start Postgres via Compose (or apply `ddl/` manually), then:
 ./mvnw -pl enrollment-service spring-boot:run
 ```
 
-Requires **JDK 21**. Do not add `-am` to `spring-boot:run`.
+Requires **JDK 21**. Host default: `COURSE_SERVICE_BASE_URL=http://localhost:8081`. Do not add `-am` to `spring-boot:run`.
+
+```bash
+curl -s -X POST http://localhost:8082/api/enrollments \
+  -H 'Content-Type: application/json' \
+  -d '{"studentUsername":"an.student","courseId":1}'
+# draft course id 3 → 422 COURSE_NOT_ENROLLABLE
+```
 
 ## Test
 
@@ -54,6 +53,6 @@ Requires **JDK 21**. Do not add `-am` to `spring-boot:run`.
 ./mvnw -q test
 ```
 
-Tests use in-memory H2 and do not need PostgreSQL.
+Tests use H2 and mock `CourseClient` / `MockRestServiceServer` — no live Course process required.
 
 Demo users: `an.student` (student), `bao.teacher` (instructor). This lesson does not enforce roles.

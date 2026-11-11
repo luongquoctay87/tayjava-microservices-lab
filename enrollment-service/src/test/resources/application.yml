@@ -8,3 +8,11 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: create-drop
+
+tayjava:
+  clients:
+    course-base-url: http://localhost:8081
+    course-connect-timeout: 200ms
+    course-read-timeout: 1s
+    course-retry-max-attempts: 3
+    course-retry-backoff: 1ms
