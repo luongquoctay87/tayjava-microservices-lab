@@ -16,6 +16,9 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  grpc:
+    server:
+      port: ${COURSE_GRPC_PORT:9091}
 
 management:
   endpoints:

@@ -8,3 +8,6 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: create-drop
+  grpc:
+    server:
+      port: 0

@@ -31,10 +31,12 @@ services:
       - tayjava-net
     ports:
       - "8081:8081"
+      - "9091:9091"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/course_db
       SPRING_DATASOURCE_USERNAME: course_app
       SPRING_DATASOURCE_PASSWORD: ${COURSE_DB_PASSWORD:-course_app_pw}
+      COURSE_GRPC_PORT: "9091"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
       interval: 10s
@@ -60,6 +62,8 @@ services:
       SPRING_DATASOURCE_USERNAME: enrollment_app
       SPRING_DATASOURCE_PASSWORD: ${ENROLLMENT_DB_PASSWORD:-enrollment_app_pw}
       COURSE_SERVICE_BASE_URL: http://course-service:8081
+      COURSE_SERVICE_GRPC_ADDRESS: static://course-service:9091
+      COURSE_TRANSPORT: grpc
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
       interval: 10s

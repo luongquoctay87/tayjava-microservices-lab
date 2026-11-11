@@ -16,11 +16,17 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  grpc:
+    client:
+      channels:
+        course:
+          address: ${COURSE_SERVICE_GRPC_ADDRESS:static://localhost:9091}
+          negotiation-type: plaintext
 
 tayjava:
   clients:
-    # rest (default) or web — switch Enrollment→Course HTTP stack without changing enroll API
-    course-http-client: ${COURSE_HTTP_CLIENT:rest}
+    # grpc (default) | rest | web
+    course-transport: ${COURSE_TRANSPORT:grpc}
     course-base-url: ${COURSE_SERVICE_BASE_URL:http://localhost:8081}
     course-connect-timeout: 200ms
     course-read-timeout: 1s

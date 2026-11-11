@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.tayjava.common.grpc.course";
+option java_outer_classname = "CourseProto";
+
+package tayjava.course.v1;
+
+// Internal Course lookup used by Enrollment (not a public REST contract).
+service CourseInternal {
+  rpc GetCourse(GetCourseRequest) returns (GetCourseResponse);
+}
+
+message GetCourseRequest {
+  int64 course_id = 1;
+}
+
+message GetCourseResponse {
+  int64 id = 1;
+  string slug = 2;
+  string title = 3;
+  bool published = 4;
+  bool found = 5;
+}

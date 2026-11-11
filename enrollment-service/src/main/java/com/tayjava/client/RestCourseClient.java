@@ -16,11 +16,7 @@ import org.springframework.web.client.RestClientException;
 
 /** Blocking Course client backed by {@link RestClient}. */
 @Component
-@ConditionalOnProperty(
-    prefix = "tayjava.clients",
-    name = "course-http-client",
-    havingValue = "rest",
-    matchIfMissing = true)
+@ConditionalOnProperty(prefix = "tayjava.clients", name = "course-transport", havingValue = "rest")
 public class RestCourseClient implements CourseClient {
 
   private final RestClient courseRestClient;

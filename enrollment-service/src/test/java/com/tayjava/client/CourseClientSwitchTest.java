@@ -7,7 +7,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
-@TestPropertySource(properties = "tayjava.clients.course-http-client=web")
+@TestPropertySource(
+    properties = {
+      "tayjava.clients.course-transport=web",
+      "spring.grpc.client.enabled=false"
+    })
 class CourseClientSwitchTest {
 
   @Autowired private CourseClient courseClient;

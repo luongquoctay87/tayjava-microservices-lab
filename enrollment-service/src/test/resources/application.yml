@@ -8,10 +8,14 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: create-drop
+  grpc:
+    client:
+      enabled: false
 
 tayjava:
   clients:
-    course-http-client: rest
+    # Tests mock CourseClient; keep HTTP RestClient available for unit client tests.
+    course-transport: rest
     course-base-url: http://localhost:8081
     course-connect-timeout: 200ms
     course-read-timeout: 1s

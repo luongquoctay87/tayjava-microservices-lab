@@ -19,7 +19,7 @@ import reactor.util.retry.Retry;
  * chain is blocked at the boundary — useful for comparing APIs side-by-side with RestClient.
  */
 @Component
-@ConditionalOnProperty(prefix = "tayjava.clients", name = "course-http-client", havingValue = "web")
+@ConditionalOnProperty(prefix = "tayjava.clients", name = "course-transport", havingValue = "web")
 public class WebCourseClient implements CourseClient {
 
   private final WebClient courseWebClient;
