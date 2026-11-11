@@ -6,18 +6,16 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-22-saga` |
-| Lesson | 22 — Saga (course purchase) |
-| Parent | `lesson-21-inbox` |
-| What changed | **Orchestration** saga for purchasing a course (`POST /api/v1/purchases`): validate course → create order intent → charge payment → confirm enrollment (writes outbox). Compensates on failure (refund + cancel order). Chosen style: **orchestration** (central `PurchaseSagaOrchestrator`), not choreography. Demo decline: `bob@example.com`. |
+| Branch | `lesson-23-schema-evolution` |
+| Lesson | 23 — Event schema evolution |
+| Parent | `lesson-22-saga` |
+| What changed | **JSON Schema** (not Avro): `EnrollmentCreatedEvent` gains optional `schemaVersion` + `studentEmail` while keeping v1 payloads readable. Contract file: `common/src/main/resources/schemas/enrollment-created-v2.json`. Producers emit v2; consumers tolerate missing optional fields. |
 
 ## Run
 
 ```bash
 docker compose up --build
 ```
-
-Ports: Course `8081`, Enrollment `8082`, BFF `8083`, Order `8084`, Kafka `9092`.
 
 ## Test
 

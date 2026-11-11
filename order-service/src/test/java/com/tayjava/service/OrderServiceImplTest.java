@@ -19,13 +19,13 @@ class OrderServiceImplTest {
   void createsOrderFromEnrollmentEventAndIsIdempotentByEnrollmentId() {
     EnrollmentCreatedEvent event =
         new EnrollmentCreatedEvent(
-            "evt-1", 101L, "alice@example.com", 7L, "APPROVED", Instant.parse("2026-01-01T00:00:00Z"));
+            "evt-1", 101L, "alice@example.com", 7L, "APPROVED", Instant.parse("2026-01-01T00:00:00Z"), null, null);
 
     OrderResp first = orderService.createFromEnrollmentEvent(event);
     OrderResp second =
         orderService.createFromEnrollmentEvent(
             new EnrollmentCreatedEvent(
-                "evt-2", 101L, "alice@example.com", 7L, "APPROVED", Instant.now()));
+                "evt-2", 101L, "alice@example.com", 7L, "APPROVED", Instant.now(), null, null));
 
     assertThat(first.getId()).isEqualTo(second.getId());
     assertThat(first.getEnrollmentId()).isEqualTo(101L);

@@ -24,7 +24,7 @@ class OrderControllerTest {
   void listsOrdersForStudent() throws Exception {
     orderService.createFromEnrollmentEvent(
         new EnrollmentCreatedEvent(
-            "evt-bob", 55L, "bob@example.com", 3L, "APPROVED", Instant.now()));
+            "evt-bob", 55L, "bob@example.com", 3L, "APPROVED", Instant.now(), null, null));
 
     mvc.perform(get("/api/v1/orders").param("student", "bob@example.com"))
         .andExpect(status().isOk())

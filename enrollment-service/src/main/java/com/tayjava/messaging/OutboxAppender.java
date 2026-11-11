@@ -27,13 +27,14 @@ public class OutboxAppender {
 
   public OutboxEvent appendEnrollmentCreated(EnrollmentResp enrollment) {
     EnrollmentCreatedEvent event =
-        new EnrollmentCreatedEvent(
+        EnrollmentCreatedEvent.v2(
             UUID.randomUUID().toString(),
             enrollment.getId(),
             enrollment.getStudentUsername(),
             enrollment.getCourseId(),
             enrollment.getStatus().name(),
-            Instant.now());
+            Instant.now(),
+            null);
     try {
       return outboxEventRepository.save(
           OutboxEvent.builder()

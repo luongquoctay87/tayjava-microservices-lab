@@ -22,7 +22,7 @@ class InboxGuardTest {
   void duplicateEventIdIsSkippedByInbox() {
     EnrollmentCreatedEvent event =
         new EnrollmentCreatedEvent(
-            "inbox-evt-1", 201L, "bob@example.com", 5L, "APPROVED", Instant.now());
+            "inbox-evt-1", 201L, "bob@example.com", 5L, "APPROVED", Instant.now(), null, null);
 
     OrderResp first = orderService.createFromEnrollmentEvent(event);
     OrderResp second = orderService.createFromEnrollmentEvent(event);
