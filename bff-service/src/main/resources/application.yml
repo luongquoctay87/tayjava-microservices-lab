@@ -1,0 +1,19 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: bff-service
+
+tayjava:
+  clients:
+    course-base-url: ${COURSE_SERVICE_BASE_URL:http://localhost:8081}
+    enrollment-base-url: ${ENROLLMENT_SERVICE_BASE_URL:http://localhost:8082}
+    connect-timeout: 200ms
+    read-timeout: 2s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

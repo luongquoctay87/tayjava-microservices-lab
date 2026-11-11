@@ -71,6 +71,29 @@ services:
       retries: 6
       start_period: 40s
 
+  bff-service:
+    build:
+      context: .
+      dockerfile: bff-service/Dockerfile
+    depends_on:
+      course-service:
+        condition: service_healthy
+      enrollment-service:
+        condition: service_healthy
+    networks:
+      - tayjava-net
+    ports:
+      - "8083:8083"
+    environment:
+      COURSE_SERVICE_BASE_URL: http://course-service:8081
+      ENROLLMENT_SERVICE_BASE_URL: http://enrollment-service:8082
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 40s
+
 networks:
   tayjava-net:
     driver: bridge

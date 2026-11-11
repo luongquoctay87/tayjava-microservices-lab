@@ -6,15 +6,25 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-15-resilience4j` |
-| Lesson | 15 — Resilience4j on outbound Course client |
-| Parent | `lesson-14-grpc` |
-| What changed | `resilience4j-spring-boot4` circuit breaker / retry / bulkhead on `ResilientCourseClient` wrapping `CourseTransport` (grpc\|rest\|web). Retries only `COURSE_UNAVAILABLE`; business `COURSE_NOT_ENROLLABLE` is not retried. Keeps `ddl/`. |
+| Branch | `lesson-16-bff` |
+| Lesson | 16 — BFF composition |
+| Parent | `lesson-15-resilience4j` |
+| What changed | New module `bff-service` (:8083) exposes `GET /api/v1/me/courses?student=` by composing Enrollment + Course over HTTP. Keeps prior services and `ddl/`. |
+
+| Service | Port |
+|---------|------|
+| `course-service` | 8081 / gRPC 9091 |
+| `enrollment-service` | 8082 |
+| `bff-service` | 8083 |
 
 ## Test
 
 ```bash
 ./mvnw -q test
+```
+
+```bash
+curl -s 'http://localhost:8083/api/v1/me/courses?student=an.student' -H 'API-Version: 1'
 ```
 
 Demo users: `an.student` / `bao.teacher`; emails: `alice@example.com`, `bob@example.com`.

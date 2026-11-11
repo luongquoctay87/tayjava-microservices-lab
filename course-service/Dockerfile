@@ -6,6 +6,7 @@ COPY pom.xml .
 COPY common/pom.xml common/pom.xml
 COPY course-service/pom.xml course-service/pom.xml
 COPY enrollment-service/pom.xml enrollment-service/pom.xml
+COPY bff-service/pom.xml bff-service/pom.xml
 COPY common/src common/src
 COPY course-service/src course-service/src
 
