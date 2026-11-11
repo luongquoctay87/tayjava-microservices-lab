@@ -6,25 +6,15 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-16-bff` |
-| Lesson | 16 — BFF composition |
-| Parent | `lesson-15-resilience4j` |
-| What changed | New module `bff-service` (:8083) exposes `GET /api/v1/me/courses?student=` by composing Enrollment + Course over HTTP. Keeps prior services and `ddl/`. |
-
-| Service | Port |
-|---------|------|
-| `course-service` | 8081 / gRPC 9091 |
-| `enrollment-service` | 8082 |
-| `bff-service` | 8083 |
+| Branch | `lesson-17-contract-testing` |
+| Lesson | 17 — Spring Cloud Contract |
+| Parent | `lesson-16-bff` |
+| What changed | Provider contracts in `course-service` (`spring-cloud-contract-maven-plugin` + generated `CourseContractTest`). Consumer stub-runner test in `enrollment-service` (`CourseClientContractTest`) uses classpath stubs from the same contract. Runs under `./mvnw test`. Keeps `ddl/`. |
 
 ## Test
 
 ```bash
 ./mvnw -q test
-```
-
-```bash
-curl -s 'http://localhost:8083/api/v1/me/courses?student=an.student' -H 'API-Version: 1'
 ```
 
 Demo users: `an.student` / `bao.teacher`; emails: `alice@example.com`, `bob@example.com`.

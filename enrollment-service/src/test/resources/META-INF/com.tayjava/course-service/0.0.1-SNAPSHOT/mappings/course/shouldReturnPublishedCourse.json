@@ -1,0 +1,22 @@
+{
+  "id" : "2433c172-de9c-4489-977c-53096bdb21b8",
+  "request" : {
+    "urlPath" : "/api/v1/courses/1",
+    "method" : "GET",
+    "headers" : {
+      "API-Version" : {
+        "equalTo" : "1"
+      }
+    }
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"success\":true,\"code\":\"SUCCESS\",\"data\":{\"id\":1,\"slug\":\"java-core\",\"title\":\"Java Core from beginner to senior\",\"instructorUsername\":\"bao.teacher\",\"published\":true}}",
+    "headers" : {
+      "Content-Type" : "application/json",
+      "API-Version" : "1"
+    },
+    "transformers" : [ "response-template", "spring-cloud-contract" ]
+  },
+  "uuid" : "2433c172-de9c-4489-977c-53096bdb21b8"
+}
