@@ -6,10 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-24-gateway` |
-| Lesson | 24 — API Gateway with Spring Cloud Gateway |
-| Parent | `lesson-23-schema-evolution` |
-| What changed | New module **`gateway-service`** (Spring Cloud Gateway WebFlux, Cloud BOM `2025.1.4`). Path routes for Course `/api/v1/courses/**`, Enrollment `/api/v1/enrollments/**` + `/api/v1/purchases/**`, Order `/api/v1/orders/**`, BFF `/api/v1/me/**`. Edge CORS, connect/response timeouts, `X-Correlation-Id` global filter, Compose service on port **8080**. No Eureka. |
+| Branch | `lesson-25-gateway-routing` |
+| Lesson | 25 — Routing, rewrite, and request aggregation at the Gateway |
+| Parent | `lesson-24-gateway` |
+| What changed | Gateway **RewritePath** (`/api/courses/**` → `/api/v1/courses/**`), **StripPrefix** for `/course-service/...`, ordered **SetPath** featured route to BFF, thin **`GET /api/catalog/summary`** aggregate with per-branch timeouts. BFF adds `/api/v1/featured-courses`. |
 
 ## Ports
 
@@ -25,7 +25,8 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 ```bash
 docker compose up --build
-curl -s http://localhost:8080/api/v1/courses
+curl -s http://localhost:8080/api/courses
+curl -s http://localhost:8080/api/catalog/summary
 ```
 
 ## Test

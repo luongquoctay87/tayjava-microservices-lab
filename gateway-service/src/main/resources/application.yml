@@ -18,22 +18,48 @@ spring:
                 allowedMethods: "GET,POST,PUT,DELETE,OPTIONS"
                 allowedHeaders: "*"
           routes:
+            # Specific path before the course catch-all (order matters).
+            - id: courses-featured
+              order: 0
+              uri: ${BFF_URI:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/courses/featured
+              filters:
+                - SetPath=/api/v1/featured-courses
+            - id: course-v0-rewrite
+              order: 5
+              uri: ${COURSE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/courses,/api/courses/**
+              filters:
+                - RewritePath=/api/courses(?<segment>/?.*), /api/v1/courses$\{segment}
+            - id: course-legacy-strip
+              order: 5
+              uri: ${COURSE_URI:http://localhost:8081}
+              predicates:
+                - Path=/course-service/api/v1/courses,/course-service/api/v1/courses/**
+              filters:
+                - StripPrefix=1
             - id: course
+              order: 10
               uri: ${COURSE_URI:http://localhost:8081}
               predicates:
                 - Path=/api/v1/courses,/api/v1/courses/**
             - id: enrollment
+              order: 10
               uri: ${ENROLLMENT_URI:http://localhost:8082}
               predicates:
                 - Path=/api/v1/enrollments,/api/v1/enrollments/**,/api/v1/purchases,/api/v1/purchases/**
             - id: order
+              order: 10
               uri: ${ORDER_URI:http://localhost:8084}
               predicates:
                 - Path=/api/v1/orders,/api/v1/orders/**
             - id: bff
+              order: 10
               uri: ${BFF_URI:http://localhost:8083}
               predicates:
-                - Path=/api/v1/me,/api/v1/me/**
+                - Path=/api/v1/me,/api/v1/me/**,/api/v1/featured-courses
 
 management:
   endpoint:

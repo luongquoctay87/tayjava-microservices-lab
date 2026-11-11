@@ -9,22 +9,47 @@ spring:
             connect-timeout: 200
             response-timeout: 1s
           routes:
+            - id: courses-featured
+              order: 0
+              uri: ${BFF_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/v1/courses/featured
+              filters:
+                - SetPath=/api/v1/featured-courses
+            - id: course-v0-rewrite
+              order: 5
+              uri: ${COURSE_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/courses,/api/courses/**
+              filters:
+                - RewritePath=/api/courses(?<segment>/?.*), /api/v1/courses$\{segment}
+            - id: course-legacy-strip
+              order: 5
+              uri: ${COURSE_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/course-service/api/v1/courses,/course-service/api/v1/courses/**
+              filters:
+                - StripPrefix=1
             - id: course
+              order: 10
               uri: ${COURSE_URI:http://127.0.0.1:9}
               predicates:
                 - Path=/api/v1/courses,/api/v1/courses/**
             - id: enrollment
+              order: 10
               uri: ${ENROLLMENT_URI:http://127.0.0.1:9}
               predicates:
                 - Path=/api/v1/enrollments,/api/v1/enrollments/**,/api/v1/purchases,/api/v1/purchases/**
             - id: order
+              order: 10
               uri: ${ORDER_URI:http://127.0.0.1:9}
               predicates:
                 - Path=/api/v1/orders,/api/v1/orders/**
             - id: bff
+              order: 10
               uri: ${BFF_URI:http://127.0.0.1:9}
               predicates:
-                - Path=/api/v1/me,/api/v1/me/**
+                - Path=/api/v1/me,/api/v1/me/**,/api/v1/featured-courses
 
 management:
   endpoints:
