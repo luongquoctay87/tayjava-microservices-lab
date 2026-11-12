@@ -35,7 +35,7 @@ class EnrollmentControllerTest {
   @Test
   void enrollsPublishedCourse() throws Exception {
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "enroll-alice-1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
@@ -45,7 +45,7 @@ class EnrollmentControllerTest {
         .andExpect(jsonPath("$.data.courseId").value(1))
         .andExpect(jsonPath("$.data.status").value("APPROVED"));
 
-    mvc.perform(get("/api/v1/enrollments").param("student", "an.student"))
+    mvc.perform(get("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student").param("student", "an.student"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].studentUsername").value("an.student"));
   }
@@ -57,7 +57,7 @@ class EnrollmentControllerTest {
 
     MvcResult first =
         mvc.perform(
-                post("/api/v1/enrollments")
+                post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                     .header("Idempotency-Key", "enroll-bob-2")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
@@ -66,7 +66,7 @@ class EnrollmentControllerTest {
     int enrollmentId = JsonPath.read(first.getResponse().getContentAsString(), "$.data.id");
 
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "enroll-bob-2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
@@ -80,14 +80,14 @@ class EnrollmentControllerTest {
   @Test
   void sameKeyDifferentPayloadIs409() throws Exception {
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "reuse-key")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
         .andExpect(status().isCreated());
 
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "reuse-key")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":2}"))
@@ -98,7 +98,7 @@ class EnrollmentControllerTest {
   @Test
   void missingIdempotencyKeyIs400() throws Exception {
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))
         .andExpect(status().isBadRequest())
@@ -108,7 +108,7 @@ class EnrollmentControllerTest {
   @Test
   void blankUsernameIs400() throws Exception {
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "blank-user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"  \",\"courseId\":1}"))
@@ -119,7 +119,7 @@ class EnrollmentControllerTest {
   @Test
   void nonPositiveCourseIdIs400() throws Exception {
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "bad-course")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":0}"))
@@ -134,7 +134,7 @@ class EnrollmentControllerTest {
         .requirePublished(3L);
 
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "draft-course")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":3}"))
@@ -149,7 +149,7 @@ class EnrollmentControllerTest {
         .requirePublished(1L);
 
     mvc.perform(
-            post("/api/v1/enrollments")
+            post("/api/v1/enrollments").header("Authorization", "Bearer demo:an.student")
                 .header("Idempotency-Key", "course-down")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"studentUsername\":\"an.student\",\"courseId\":1}"))

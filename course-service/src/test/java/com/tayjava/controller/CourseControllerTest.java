@@ -21,7 +21,7 @@ class CourseControllerTest {
 
   @Test
   void listsSeededPublishedCourses() throws Exception {
-    mvc.perform(get("/api/v1/courses"))
+    mvc.perform(get("/api/v1/courses").header("Authorization", "Bearer demo:an.student"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.code").value("SUCCESS"))
@@ -31,7 +31,7 @@ class CourseControllerTest {
 
   @Test
   void missingCourseIs404() throws Exception {
-    mvc.perform(get("/api/v1/courses/999"))
+    mvc.perform(get("/api/v1/courses/999").header("Authorization", "Bearer demo:an.student"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.success").value(false))
         .andExpect(jsonPath("$.code").value("COURSE_NOT_FOUND"));
@@ -40,7 +40,7 @@ class CourseControllerTest {
   @Test
   void blankTitleIs400() throws Exception {
     mvc.perform(
-            post("/api/v1/courses")
+            post("/api/v1/courses").header("Authorization", "Bearer demo:an.student")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -52,7 +52,7 @@ class CourseControllerTest {
 
   @Test
   void unsupportedApiVersionIs400() throws Exception {
-    mvc.perform(get("/api/v1/courses").header("API-Version", "2"))
+    mvc.perform(get("/api/v1/courses").header("Authorization", "Bearer demo:an.student").header("API-Version", "2"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("UNSUPPORTED_API_VERSION"));
   }

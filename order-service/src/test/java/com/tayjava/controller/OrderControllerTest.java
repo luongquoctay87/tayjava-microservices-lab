@@ -26,7 +26,7 @@ class OrderControllerTest {
         new EnrollmentCreatedEvent(
             "evt-bob", 55L, "bob@example.com", 3L, "APPROVED", Instant.now(), null, null));
 
-    mvc.perform(get("/api/v1/orders").param("student", "bob@example.com"))
+    mvc.perform(get("/api/v1/orders").header("Authorization", "Bearer demo:an.student").param("student", "bob@example.com"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data[0].enrollmentId").value(55))

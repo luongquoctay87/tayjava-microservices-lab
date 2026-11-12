@@ -40,7 +40,7 @@ class MyCoursesControllerTest {
                     .status(EEnrollmentStatus.APPROVED)
                     .build()));
 
-    mvc.perform(get("/api/v1/me/courses").param("student", "an.student").header("API-Version", "1"))
+    mvc.perform(get("/api/v1/me/courses").header("Authorization", "Bearer demo:an.student").param("student", "an.student").header("API-Version", "1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data[0].slug").value("java-core"))
@@ -52,7 +52,7 @@ class MyCoursesControllerTest {
     when(myCoursesService.listMyCourses("an.student"))
         .thenThrow(new ErrorException(ErrorCode.COURSE_UNAVAILABLE, "Course service unavailable"));
 
-    mvc.perform(get("/api/v1/me/courses").param("student", "an.student"))
+    mvc.perform(get("/api/v1/me/courses").header("Authorization", "Bearer demo:an.student").param("student", "an.student"))
         .andExpect(status().isServiceUnavailable())
         .andExpect(jsonPath("$.code").value("COURSE_UNAVAILABLE"));
   }

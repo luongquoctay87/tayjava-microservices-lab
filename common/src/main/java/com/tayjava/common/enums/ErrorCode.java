@@ -14,6 +14,8 @@ public enum ErrorCode {
   INVALID_REQUEST("Invalid request", HttpStatus.BAD_REQUEST),
   VALIDATION_ERROR("Validation failed", HttpStatus.BAD_REQUEST),
   UNSUPPORTED_API_VERSION("Unsupported API version", HttpStatus.BAD_REQUEST),
+  UNAUTHORIZED("Authentication required", HttpStatus.UNAUTHORIZED),
+  FORBIDDEN("Insufficient privileges", HttpStatus.FORBIDDEN),
   DATA_NOT_FOUND("Data not found", HttpStatus.NOT_FOUND),
   COURSE_NOT_FOUND("Course not found", HttpStatus.NOT_FOUND),
   COURSE_NOT_ENROLLABLE("Course cannot be enrolled", HttpStatus.UNPROCESSABLE_CONTENT),
