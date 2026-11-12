@@ -15,6 +15,8 @@ public interface CourseOrderRepository extends JpaRepository<CourseOrder, Long> 
 
   List<CourseOrder> findByStudentUsernameAndStatus(String studentUsername, String status);
 
+  List<CourseOrder> findByStatus(String status);
+
   Optional<CourseOrder> findFirstByStudentUsernameAndCourseIdAndStatus(
       String studentUsername, Long courseId, String status);
 }

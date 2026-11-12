@@ -1,0 +1,18 @@
+# Docs / lab example only — not wired into an alertmanager.
+groups:
+  - name: checkout-slo
+    rules:
+      - record: checkout:fulfill_bad_ratio:rate5m
+        expr: |
+          1 - (
+            sum(rate(checkout_fulfill_seconds_bucket{application="order-service",outcome="success",le="30.0"}[5m]))
+            /
+            sum(rate(checkout_fulfill_seconds_count{application="order-service"}[5m]))
+          )
+      - alert: CheckoutFulfillFastBurn
+        expr: checkout:fulfill_bad_ratio:rate5m > 0.14
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Fulfillment error budget burning quickly (lab example)"

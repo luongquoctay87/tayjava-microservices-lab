@@ -6,12 +6,10 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-34-correlation-id` |
-| Lesson | 34 — Correlation ID from Gateway to services |
-| Parent | `lesson-33-tracing` |
-| What changed | Shared `CorrelationIds`; Gateway filter keeps/generates `X-Correlation-Id`; servlet filters + MDC on Course/Enrollment/Order/BFF; RestClient/WebClient propagation; Micrometer baggage; logging pattern includes `correlationId`. |
-
-Correlation id ≠ OpenTelemetry trace id. Both appear in the log pattern.
+| Branch | `lesson-35-metrics` |
+| Lesson | 35 — Metrics / SLO hooks (Micrometer) |
+| Parent | `lesson-34-correlation-id` |
+| What changed | Prometheus registry on services; `checkout.fulfill` timer + stuck gauge on order-service; `/actuator/prometheus`; scrape + alert **examples** under `observability/` (alerts = docs only). |
 
 ## Test
 

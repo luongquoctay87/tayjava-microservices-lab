@@ -7,6 +7,7 @@ import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
 import com.tayjava.entity.CourseOrder;
 import com.tayjava.messaging.InboxGuard;
+import com.tayjava.metrics.CheckoutMetrics;
 import com.tayjava.repository.CourseOrderRepository;
 import java.time.Instant;
 import java.util.List;
@@ -23,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
 
   private final CourseOrderRepository courseOrderRepository;
   private final InboxGuard inboxGuard;
+  private final CheckoutMetrics checkoutMetrics;
 
   @Override
   @Transactional
@@ -97,6 +99,8 @@ public class OrderServiceImpl implements OrderService {
     order.setStatus("FULFILLED");
     order.setSourceEventId(event.eventId());
     CourseOrder saved = courseOrderRepository.save(order);
+    Instant paidAt = saved.getPaidAt() != null ? saved.getPaidAt() : saved.getCreatedAt();
+    checkoutMetrics.recordFulfilled(paidAt, Instant.now());
     log.info(
         "Order id={} FULFILLING→FULFILLED enrollmentId={} eventId={}",
         saved.getId(),
@@ -139,6 +143,9 @@ public class OrderServiceImpl implements OrderService {
       throw new ErrorException(ErrorCode.INVALID_REQUEST, "Refunded order cannot be paid again");
     }
     order.setStatus("FULFILLING");
+    if (order.getPaidAt() == null) {
+      order.setPaidAt(Instant.now());
+    }
     return toResp(courseOrderRepository.save(order));
   }
 

@@ -44,4 +44,8 @@ public class CourseOrder {
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
+
+  /** Set when checkout enters FULFILLING (pay initiated). Used for fulfill SLO timers. */
+  @Column(name = "paid_at")
+  private Instant paidAt;
 }

@@ -20,3 +20,5 @@ management:
   tracing:
     export:
       enabled: false
+
+spring.task.scheduling.enabled: false

@@ -225,6 +225,17 @@ services:
       - "127.0.0.1:16686:16686"
       - "127.0.0.1:4318:4318"
 
+  prometheus:
+    image: prom/prometheus:v3.16.0
+    profiles: ["observability"]
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/rules:/etc/prometheus/rules:ro
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - tayjava-net
+
 networks:
   tayjava-net:
     driver: bridge
