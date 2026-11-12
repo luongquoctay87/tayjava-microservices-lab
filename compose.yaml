@@ -1,6 +1,12 @@
 # File: compose.yaml
 name: tayjava-microservices-lab
 
+x-spring-app: &spring-app
+  restart: unless-stopped
+  stop_grace_period: 40s
+  networks:
+    - tayjava-net
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -11,7 +17,7 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - tayjava-pg-data:/var/lib/postgresql/data
-      - ./ddl:/docker-entrypoint-initdb.d:ro
+      - ./infra/postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
     networks:
       - tayjava-net
     healthcheck:

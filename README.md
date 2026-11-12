@@ -6,15 +6,32 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-36-health-shutdown` |
-| Lesson | 36 — Readiness/liveness split and graceful shutdown |
-| Parent | `lesson-35-metrics` |
-| What changed | `server.shutdown=graceful` + lifecycle timeout; Actuator probes; readiness includes `db` (and enrollment `outboxBacklog`); Compose healthchecks hit `/actuator/health/readiness` with `stop_grace_period: 40s`. |
+| Branch | `lesson-37-compose-baseline` |
+| Lesson | 37 — Compose baseline TayJava + Flyway SoT |
+| Parent | `lesson-36-health-shutdown` |
+| What changed | Flyway migrations are the schema source of truth (`ddl-auto: validate`); Postgres init lives under `infra/postgres/`; Compose health/grace baseline kept; temporary demo comments cleaned. |
 
-Liveness stays process-focused. Dependency/backlog pain belongs on readiness so orchestrators stop sending traffic without killing a healthy JVM.
+## Schema
+
+| Service | Migrations |
+|---|---|
+| course-service | `src/main/resources/db/migration/` |
+| enrollment-service | `src/main/resources/db/migration/` |
+| order-service | `src/main/resources/db/migration/` |
+
+Tests keep `spring.flyway.enabled=false` + H2 `create-drop` for deterministic unit/slice tests.
 
 ## Test
 
 ```bash
 ./mvnw -q test
 ```
+
+## Run (Compose)
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Optional observability: `docker compose --profile observability up -d`
