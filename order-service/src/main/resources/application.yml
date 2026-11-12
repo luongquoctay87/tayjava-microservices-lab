@@ -1,7 +1,10 @@
 server:
+  shutdown: graceful
   port: 8084
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: order-service
   datasource:
@@ -28,6 +31,15 @@ tayjava:
     enabled: true
 
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
   tracing:
     sampling:
       probability: ${TRACING_SAMPLE_PROBABILITY:1.0}

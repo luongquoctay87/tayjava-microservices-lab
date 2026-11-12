@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
 
   List<OutboxEvent> findTop50ByStatusOrderByIdAsc(OutboxEvent.Status status);
+
+  long countByStatus(OutboxEvent.Status status);
 }

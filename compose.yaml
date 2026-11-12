@@ -47,6 +47,7 @@ services:
       start_period: 20s
 
   course-service:
+    stop_grace_period: 40s
     build:
       context: .
       dockerfile: course-service/Dockerfile
@@ -68,13 +69,14 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6
       start_period: 40s
 
   enrollment-service:
+    stop_grace_period: 40s
     build:
       context: .
       dockerfile: enrollment-service/Dockerfile
@@ -86,6 +88,7 @@ services:
       kafka:
         condition: service_healthy
       config-server:
+    stop_grace_period: 40s
         condition: service_healthy
     networks:
       - tayjava-net
@@ -103,13 +106,14 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6
       start_period: 40s
 
   order-service:
+    stop_grace_period: 40s
     build:
       context: .
       dockerfile: order-service/Dockerfile
@@ -128,13 +132,14 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${ORDER_DB_PASSWORD:-order_app_pw}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8084/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8084/actuator/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6
       start_period: 40s
 
   bff-service:
+    stop_grace_period: 40s
     build:
       context: .
       dockerfile: bff-service/Dockerfile
@@ -156,7 +161,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6
@@ -174,7 +179,7 @@ services:
     volumes:
       - ./tayjava-config:/config-repo:ro
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6
@@ -191,6 +196,7 @@ services:
       retries: 10
 
   gateway-service:
+    stop_grace_period: 40s
     build:
       context: .
       dockerfile: gateway-service/Dockerfile
@@ -210,7 +216,7 @@ services:
       REDIS_PORT: "6379"
       TRUSTED_PROXY_COUNT: "0"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
       interval: 10s
       timeout: 3s
       retries: 6

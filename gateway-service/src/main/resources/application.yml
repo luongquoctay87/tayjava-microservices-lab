@@ -1,7 +1,10 @@
 server:
+  shutdown: graceful
   port: 8080
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: gateway-service
   reactor:
@@ -120,6 +123,14 @@ management:
   endpoint:
     gateway:
       access: read_only
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
   endpoints:
     web:
       exposure:

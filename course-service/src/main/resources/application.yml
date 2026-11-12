@@ -1,7 +1,10 @@
 server:
+  shutdown: graceful
   port: 8081
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: course-service
   data:
@@ -27,6 +30,15 @@ spring:
       port: ${COURSE_GRPC_PORT:9091}
 
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
   tracing:
     sampling:
       probability: ${TRACING_SAMPLE_PROBABILITY:1.0}
