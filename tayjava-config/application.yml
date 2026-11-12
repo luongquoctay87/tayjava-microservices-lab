@@ -1,0 +1,6 @@
+# Shared non-secret defaults for all clients. No passwords or signing keys here.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

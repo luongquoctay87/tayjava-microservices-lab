@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: enrollment-service
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}"
+  cloud:
+    config:
+      fail-fast: ${CONFIG_FAIL_FAST:false}
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/enrollment_db}
     username: ${SPRING_DATASOURCE_USERNAME:enrollment_app}
@@ -60,4 +65,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,refresh

@@ -1,0 +1,4 @@
+tayjava:
+  clients:
+    course-read-timeout: 1s
+    course-connect-timeout: 200ms

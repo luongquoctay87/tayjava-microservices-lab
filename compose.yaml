@@ -81,6 +81,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - tayjava-net
     ports:
@@ -92,6 +94,9 @@ services:
       COURSE_SERVICE_BASE_URL: http://course-service:8081
       COURSE_SERVICE_GRPC_ADDRESS: static://course-service:9091
       COURSE_TRANSPORT: grpc
+      CONFIG_SERVER_URI: http://config-server:8888
+      CONFIG_FAIL_FAST: "false"
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
@@ -147,6 +152,24 @@ services:
       timeout: 3s
       retries: 6
       start_period: 40s
+
+
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    networks:
+      - tayjava-net
+    environment:
+      CONFIG_REPO_LOCATION: file:/config-repo/
+    volumes:
+      - ./tayjava-config:/config-repo:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 30s
 
   redis:
     image: redis:7.4-alpine

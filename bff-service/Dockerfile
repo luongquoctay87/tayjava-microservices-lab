@@ -9,6 +9,7 @@ COPY enrollment-service/pom.xml enrollment-service/pom.xml
 COPY bff-service/pom.xml bff-service/pom.xml
 COPY order-service/pom.xml order-service/pom.xml
 COPY gateway-service/pom.xml gateway-service/pom.xml
+COPY config-server/pom.xml config-server/pom.xml
 COPY common/src common/src
 COPY bff-service/src bff-service/src
 

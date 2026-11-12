@@ -1,0 +1,4 @@
+tayjava:
+  clients:
+    course-base-url: http://course-service:8081
+    course-read-timeout: 1s
