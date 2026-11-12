@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: gateway-service
+  reactor:
+    context-propagation: auto
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -96,6 +98,19 @@ tayjava:
     trusted-proxy-count: ${TRUSTED_PROXY_COUNT:0}
 
 management:
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_PROBABILITY:1.0}
+    export:
+      enabled: ${TRACING_EXPORT_ENABLED:false}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+    metrics:
+      export:
+        enabled: false
   endpoint:
     gateway:
       access: read_only

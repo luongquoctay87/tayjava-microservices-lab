@@ -15,3 +15,8 @@ spring:
 tayjava:
   kafka:
     enabled: false
+
+management:
+  tracing:
+    export:
+      enabled: false

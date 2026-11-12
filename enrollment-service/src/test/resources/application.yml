@@ -54,3 +54,8 @@ resilience4j:
       course:
         maxConcurrentCalls: 20
         maxWaitDuration: 0
+
+management:
+  tracing:
+    export:
+      enabled: false

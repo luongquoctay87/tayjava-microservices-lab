@@ -12,6 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,9 +31,17 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   private final EnrollmentWriter enrollmentWriter;
   private final CourseClient courseClient;
   private final PaymentStub paymentStub;
+  private final ObservationRegistry observationRegistry;
 
   @Override
   public EnrollmentResp enroll(EnrollmentReq request, String idempotencyKey) {
+    return Observation.createNotStarted("enrollment.enroll", observationRegistry)
+        .lowCardinalityKeyValue("operation", "enroll")
+        .highCardinalityKeyValue("course.id", String.valueOf(request.getCourseId()))
+        .observe(() -> doEnroll(request, idempotencyKey));
+  }
+
+  private EnrollmentResp doEnroll(EnrollmentReq request, String idempotencyKey) {
     if (!StringUtils.hasText(idempotencyKey)) {
       throw new ErrorException(ErrorCode.IDEMPOTENCY_KEY_REQUIRED, "Idempotency-Key is required");
     }

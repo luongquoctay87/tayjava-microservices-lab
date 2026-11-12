@@ -6,24 +6,28 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-32-redis-cache` |
-| Lesson | 32 — Redis cache between Course and Enrollment |
-| Parent | `lesson-30-eventual-consistency` |
-| What changed | BFF `CourseCache` (cache-aside, jittered TTL, single-flight) for My Courses titles; Redis key `bff:course:v1:{id}`; course-service evicts the key after create/update commit; enroll write decisions still call Course directly. |
+| Branch | `lesson-33-tracing` |
+| Lesson | 33 — Distributed tracing with OpenTelemetry / Micrometer Tracing |
+| Parent | `lesson-32-redis-cache` |
+| What changed | `spring-boot-starter-opentelemetry` on Course, Enrollment, Order, BFF, Gateway; OTLP export off by default; Kafka observation enabled; `enrollment.enroll` Observation; optional Jaeger profile `observability`. |
 
-## Cache rules
+## Tracing
 
-| OK to cache | Not OK |
+| Setting | Default |
 |---|---|
-| Public title / slug / published for My Courses | Enroll / pay decisions |
-| Shared key `bff:course:v1:{id}` | Per-user authorization under that key |
+| `TRACING_EXPORT_ENABLED` | `false` (tests / local without collector) |
+| `OTLP_TRACES_ENDPOINT` | `http://localhost:4318/v1/traces` |
+| Sample probability | `1.0` in lab |
 
-Redis failures are treated as misses. Stale titles are bounded by TTL (~120–150s) plus explicit eviction.
+```bash
+docker compose --profile observability up -d jaeger
+TRACING_EXPORT_ENABLED=true docker compose up -d
+```
+
+Jaeger UI: http://localhost:16686
 
 ## Test
 
 ```bash
 ./mvnw -q test
 ```
-
-Demo users: `an.student` / `bao.teacher`; emails: `alice@example.com`, `bob@example.com`.

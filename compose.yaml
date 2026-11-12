@@ -216,6 +216,15 @@ services:
       retries: 6
       start_period: 40s
 
+  jaeger:
+    image: jaegertracing/jaeger:2.23.0
+    profiles: ["observability"]
+    networks:
+      - tayjava-net
+    ports:
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:4318:4318"
+
 networks:
   tayjava-net:
     driver: bridge
