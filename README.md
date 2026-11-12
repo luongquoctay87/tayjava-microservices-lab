@@ -6,24 +6,20 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-29-service-auth` |
-| Lesson | 29 — Service-to-service auth (bridge) |
-| Parent | `lesson-28-zero-trust` |
-| What changed | Course exposes **`GET /internal/courses/{id}`** (not Gateway-routed) requiring demo Bearer with `scope=course.read`. Enrollment REST/WebClient attach a lab client-credentials stand-in (`Bearer demo:enrollment-service;scope=course.read`) and call the internal path. **mTLS** is documented only (optional Compose SSL bundles belong in a later hardening pass / Spring Security series). |
+| Branch | `lesson-30-eventual-consistency` |
+| Lesson | 30 — Eventual consistency on Enrollment |
+| Parent | `lesson-29-service-auth` |
+| What changed | Checkout creates an Order without an enrollment row; `POST …/pay` returns **`FULFILLING`**. When Order consumes `EnrollmentCreated`, matching FULFILLING orders move to **`FULFILLED`**. BFF exposes **`GET /api/v1/checkout-status/{orderId}`** for polling and shows a My Courses banner for open FULFILLING orders (does not invent an `enrollmentId`). |
 
-## Demo tokens
+## Drift window
 
-```text
-# User (lesson 28)
-Authorization: Bearer demo:an.student
+| Moment | Order | Enrollment | UI |
+|---|---|---|---|
+| After pay | `FULFILLING` | no row | “Order #… is being processed” |
+| After Enrollment consumer | still `FULFILLING` until event reaches Order | `APPROVED` | My Courses may already list the course |
+| After Order inbox | `FULFILLED` | `APPROVED` | checkout-status stops polling |
 
-# Service client-credentials stand-in (this lesson)
-Authorization: Bearer demo:enrollment-service;scope=course.read
-```
-
-## mTLS (optional, not wired)
-
-Mutual TLS authenticates the channel once SANs are checked. This lab keeps HTTP plaintext on the Compose network and proves caller identity with the scoped demo Bearer above. Production often combines mesh mTLS + token scopes.
+Poll `GET /api/v1/orders/{id}` or `GET /api/v1/checkout-status/{orderId}` with backoff — do not hammer My Courses every 50 ms looking for an enrollment that is intentionally missing.
 
 ## Test
 

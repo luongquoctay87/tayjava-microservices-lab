@@ -12,9 +12,12 @@ import lombok.Getter;
 public class MyCourseResp implements Serializable {
 
   private Long enrollmentId;
+  private Long orderId;
   private Long courseId;
   private String slug;
   private String title;
   private String instructorUsername;
   private EEnrollmentStatus status;
+  /** Present while Order is FULFILLING and Enrollment has no row yet. */
+  private String message;
 }

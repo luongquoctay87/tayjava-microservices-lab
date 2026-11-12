@@ -1,6 +1,7 @@
 package com.tayjava.service;
 
 import com.tayjava.common.dto.event.EnrollmentCreatedEvent;
+import com.tayjava.common.dto.order.CreateOrderReq;
 import com.tayjava.common.dto.order.OrderResp;
 import com.tayjava.common.enums.ErrorCode;
 import com.tayjava.common.exception.ErrorException;
@@ -9,6 +10,7 @@ import com.tayjava.messaging.InboxGuard;
 import com.tayjava.repository.CourseOrderRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,16 +26,51 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
+  public OrderResp createCheckout(CreateOrderReq request) {
+    CourseOrder saved =
+        courseOrderRepository.save(
+            CourseOrder.builder()
+                .studentUsername(request.getStudentUsername())
+                .courseId(request.getCourseId())
+                .status("CREATED")
+                .sourceEventId("checkout-" + UUID.randomUUID())
+                .createdAt(Instant.now())
+                .build());
+    log.info(
+        "Created checkout order id={} student={} courseId={}",
+        saved.getId(),
+        saved.getStudentUsername(),
+        saved.getCourseId());
+    return toResp(saved);
+  }
+
+  @Override
+  @Transactional
   public OrderResp createFromEnrollmentEvent(EnrollmentCreatedEvent event) {
     if (!inboxGuard.claim(event.eventId(), "EnrollmentCreated")) {
       return courseOrderRepository
           .findByEnrollmentId(event.enrollmentId())
           .map(this::toResp)
-          .orElse(null);
+          .orElseGet(
+              () ->
+                  courseOrderRepository
+                      .findFirstByStudentUsernameAndCourseIdAndStatus(
+                          event.studentUsername(), event.courseId(), "FULFILLED")
+                      .map(this::toResp)
+                      .orElse(null));
     }
+
     return courseOrderRepository
         .findByEnrollmentId(event.enrollmentId())
         .map(this::toResp)
+        .orElseGet(() -> fulfillOrCreate(event));
+  }
+
+  private OrderResp fulfillOrCreate(EnrollmentCreatedEvent event) {
+    return courseOrderRepository
+        .findFirstByStudentUsernameAndCourseIdAndStatus(
+            event.studentUsername(), event.courseId(), "FULFILLING")
+        .map(order -> markFulfilled(order, event))
         .orElseGet(
             () -> {
               CourseOrder saved =
@@ -55,10 +92,32 @@ public class OrderServiceImpl implements OrderService {
             });
   }
 
+  private OrderResp markFulfilled(CourseOrder order, EnrollmentCreatedEvent event) {
+    order.setEnrollmentId(event.enrollmentId());
+    order.setStatus("FULFILLED");
+    order.setSourceEventId(event.eventId());
+    CourseOrder saved = courseOrderRepository.save(order);
+    log.info(
+        "Order id={} FULFILLING→FULFILLED enrollmentId={} eventId={}",
+        saved.getId(),
+        saved.getEnrollmentId(),
+        event.eventId());
+    return toResp(saved);
+  }
+
   @Override
   @Transactional(readOnly = true)
   public List<OrderResp> getByStudentUsername(String studentUsername) {
     return courseOrderRepository.findByStudentUsername(studentUsername).stream()
+        .map(this::toResp)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<OrderResp> listFulfillingByStudent(String studentUsername) {
+    return courseOrderRepository.findByStudentUsernameAndStatus(studentUsername, "FULFILLING")
+        .stream()
         .map(this::toResp)
         .toList();
   }
@@ -75,6 +134,9 @@ public class OrderServiceImpl implements OrderService {
     CourseOrder order = requireOrder(orderId);
     if ("FULFILLED".equals(order.getStatus()) || "FULFILLING".equals(order.getStatus())) {
       return toResp(order);
+    }
+    if ("REFUNDED".equals(order.getStatus())) {
+      throw new ErrorException(ErrorCode.INVALID_REQUEST, "Refunded order cannot be paid again");
     }
     order.setStatus("FULFILLING");
     return toResp(courseOrderRepository.save(order));

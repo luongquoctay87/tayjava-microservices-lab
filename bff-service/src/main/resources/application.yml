@@ -9,6 +9,7 @@ tayjava:
   clients:
     course-base-url: ${COURSE_SERVICE_BASE_URL:http://localhost:8081}
     enrollment-base-url: ${ENROLLMENT_SERVICE_BASE_URL:http://localhost:8082}
+    order-base-url: ${ORDER_SERVICE_BASE_URL:http://localhost:8084}
     connect-timeout: 200ms
     read-timeout: 2s
 

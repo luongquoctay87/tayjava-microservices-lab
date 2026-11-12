@@ -26,7 +26,8 @@ public class CourseOrder {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "enrollment_id", nullable = false, unique = true)
+  /** Null while the order is CREATED/FULFILLING and Enrollment has not written a row yet. */
+  @Column(name = "enrollment_id", unique = true)
   private Long enrollmentId;
 
   @Column(name = "student_username", nullable = false, length = 100)

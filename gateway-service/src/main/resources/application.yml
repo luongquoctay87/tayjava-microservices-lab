@@ -89,7 +89,7 @@ spring:
               order: 10
               uri: ${BFF_URI:http://localhost:8083}
               predicates:
-                - Path=/api/v1/me,/api/v1/me/**,/api/v1/featured-courses
+                - Path=/api/v1/me,/api/v1/me/**,/api/v1/featured-courses,/api/v1/checkout-status,/api/v1/checkout-status/**
 
 tayjava:
   gateway:

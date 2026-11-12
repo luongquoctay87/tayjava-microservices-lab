@@ -146,6 +146,7 @@ services:
     environment:
       COURSE_SERVICE_BASE_URL: http://course-service:8081
       ENROLLMENT_SERVICE_BASE_URL: http://enrollment-service:8082
+      ORDER_SERVICE_BASE_URL: http://order-service:8084
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health"]
       interval: 10s

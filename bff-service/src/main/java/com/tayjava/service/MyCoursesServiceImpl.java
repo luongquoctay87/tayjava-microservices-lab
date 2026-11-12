@@ -2,7 +2,9 @@ package com.tayjava.service;
 
 import com.tayjava.client.CourseApiClient;
 import com.tayjava.client.EnrollmentApiClient;
+import com.tayjava.client.OrderApiClient;
 import com.tayjava.common.dto.bff.MyCourseResp;
+import com.tayjava.common.exception.ErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +18,13 @@ public class MyCoursesServiceImpl implements MyCoursesService {
 
   private final EnrollmentApiClient enrollmentApiClient;
   private final CourseApiClient courseApiClient;
+  private final OrderApiClient orderApiClient;
 
   @Override
   public List<MyCourseResp> listMyCourses(String studentUsername) {
     List<EnrollmentApiClient.EnrollmentItem> enrollments =
         enrollmentApiClient.listByStudent(studentUsername);
-    List<MyCourseResp> result = new ArrayList<>(enrollments.size());
+    List<MyCourseResp> result = new ArrayList<>(enrollments.size() + 4);
     for (EnrollmentApiClient.EnrollmentItem enrollment : enrollments) {
       CourseApiClient.CourseItem course = courseApiClient.getById(enrollment.getCourseId());
       result.add(
@@ -34,7 +37,34 @@ public class MyCoursesServiceImpl implements MyCoursesService {
               .status(enrollment.getStatus())
               .build());
     }
-    log.info("Composed {} courses for student={}", result.size(), studentUsername);
+
+    for (OrderApiClient.OrderItem pending : orderApiClient.listFulfillingByStudent(studentUsername)) {
+      result.add(pendingCheckoutRow(pending));
+    }
+
+    log.info("Composed {} My Courses rows for student={}", result.size(), studentUsername);
     return result;
+  }
+
+  private MyCourseResp pendingCheckoutRow(OrderApiClient.OrderItem pending) {
+    String title = "Opening your course…";
+    String slug = null;
+    String instructor = null;
+    try {
+      CourseApiClient.CourseItem course = courseApiClient.getById(pending.getCourseId());
+      title = course.getTitle();
+      slug = course.getSlug();
+      instructor = course.getInstructorUsername();
+    } catch (ErrorException ignored) {
+      // Course lag or outage must not invent an enrollment; keep the FULFILLING banner.
+    }
+    return MyCourseResp.builder()
+        .orderId(pending.getId())
+        .courseId(pending.getCourseId())
+        .slug(slug)
+        .title(title)
+        .instructorUsername(instructor)
+        .message("Order #" + pending.getId() + " is being processed")
+        .build();
   }
 }

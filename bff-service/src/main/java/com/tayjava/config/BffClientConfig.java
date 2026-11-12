@@ -29,6 +29,15 @@ public class BffClientConfig {
     return builder.baseUrl(baseUrl).requestFactory(factory(connectTimeout, readTimeout)).build();
   }
 
+  @Bean
+  RestClient orderRestClient(
+      RestClient.Builder builder,
+      @Value("${tayjava.clients.order-base-url}") String baseUrl,
+      @Value("${tayjava.clients.connect-timeout}") Duration connectTimeout,
+      @Value("${tayjava.clients.read-timeout}") Duration readTimeout) {
+    return builder.baseUrl(baseUrl).requestFactory(factory(connectTimeout, readTimeout)).build();
+  }
+
   private static JdkClientHttpRequestFactory factory(Duration connectTimeout, Duration readTimeout) {
     HttpClient httpClient = HttpClient.newBuilder().connectTimeout(connectTimeout).build();
     JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
