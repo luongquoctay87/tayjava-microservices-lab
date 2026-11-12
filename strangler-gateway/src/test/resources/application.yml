@@ -1,0 +1,27 @@
+spring:
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 200
+            response-timeout: 1s
+          routes:
+            - id: courses-read-new
+              uri: ${COURSE_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/courses/**
+                - Method=GET
+                - Weight=courses-read, 50
+            - id: courses-read-monolith
+              uri: ${MONOLITH_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/courses/**
+                - Method=GET
+                - Weight=courses-read, 50
+            - id: monolith
+              uri: ${MONOLITH_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/**

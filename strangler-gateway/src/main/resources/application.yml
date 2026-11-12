@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: strangler-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: courses-read-new
+              uri: ${COURSE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/courses/**
+                - Method=GET
+                - Weight=courses-read, 10
+            - id: courses-read-monolith
+              uri: ${MONOLITH_URI:http://localhost:8090}
+              predicates:
+                - Path=/api/courses/**
+                - Method=GET
+                - Weight=courses-read, 90
+            - id: monolith
+              uri: ${MONOLITH_URI:http://localhost:8090}
+              predicates:
+                - Path=/api/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
