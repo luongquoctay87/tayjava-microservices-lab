@@ -1,7 +1,9 @@
 package com.tayjava.config;
 
+import com.tayjava.common.observability.CorrelationIds;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +19,7 @@ public class BffClientConfig {
       @Value("${tayjava.clients.course-base-url}") String baseUrl,
       @Value("${tayjava.clients.connect-timeout}") Duration connectTimeout,
       @Value("${tayjava.clients.read-timeout}") Duration readTimeout) {
-    return builder.baseUrl(baseUrl).requestFactory(factory(connectTimeout, readTimeout)).build();
+    return client(builder, baseUrl, connectTimeout, readTimeout);
   }
 
   @Bean
@@ -26,7 +28,7 @@ public class BffClientConfig {
       @Value("${tayjava.clients.enrollment-base-url}") String baseUrl,
       @Value("${tayjava.clients.connect-timeout}") Duration connectTimeout,
       @Value("${tayjava.clients.read-timeout}") Duration readTimeout) {
-    return builder.baseUrl(baseUrl).requestFactory(factory(connectTimeout, readTimeout)).build();
+    return client(builder, baseUrl, connectTimeout, readTimeout);
   }
 
   @Bean
@@ -35,7 +37,23 @@ public class BffClientConfig {
       @Value("${tayjava.clients.order-base-url}") String baseUrl,
       @Value("${tayjava.clients.connect-timeout}") Duration connectTimeout,
       @Value("${tayjava.clients.read-timeout}") Duration readTimeout) {
-    return builder.baseUrl(baseUrl).requestFactory(factory(connectTimeout, readTimeout)).build();
+    return client(builder, baseUrl, connectTimeout, readTimeout);
+  }
+
+  private static RestClient client(
+      RestClient.Builder builder, String baseUrl, Duration connectTimeout, Duration readTimeout) {
+    return builder
+        .baseUrl(baseUrl)
+        .requestFactory(factory(connectTimeout, readTimeout))
+        .requestInterceptor(
+            (request, body, execution) -> {
+              String cid = MDC.get(CorrelationIds.MDC_KEY);
+              if (CorrelationIds.isValid(cid)) {
+                request.getHeaders().set(CorrelationIds.HEADER, cid);
+              }
+              return execution.execute(request, body);
+            })
+        .build();
   }
 
   private static JdkClientHttpRequestFactory factory(Duration connectTimeout, Duration readTimeout) {

@@ -11,20 +11,20 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Accepts a safe client correlation id or generates a UUID. Downstream services may log the same
- * header; it is not a substitute for an OpenTelemetry trace id.
+ * Accepts a safe client correlation id or generates a UUID, then forwards it downstream and on the
+ * response. Distinct from the OpenTelemetry trace id.
  */
 @Component
 public class CorrelationIdFilter implements GlobalFilter, Ordered {
 
-  static final String HEADER = "X-Correlation-Id";
-  private static final Pattern SAFE_ID = Pattern.compile("[A-Za-z0-9-]{8,64}");
+  public static final String HEADER = "X-Correlation-Id";
+  private static final Pattern VALID = Pattern.compile("[A-Za-z0-9._-]{1,64}");
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     String incoming = exchange.getRequest().getHeaders().getFirst(HEADER);
     String correlationId =
-        incoming != null && SAFE_ID.matcher(incoming).matches()
+        incoming != null && VALID.matcher(incoming).matches()
             ? incoming
             : UUID.randomUUID().toString();
 
@@ -35,6 +35,6 @@ public class CorrelationIdFilter implements GlobalFilter, Ordered {
 
   @Override
   public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE;
+    return Ordered.HIGHEST_PRECEDENCE + 10;
   }
 }

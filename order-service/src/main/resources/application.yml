@@ -33,6 +33,12 @@ management:
       probability: ${TRACING_SAMPLE_PROBABILITY:1.0}
     export:
       enabled: ${TRACING_EXPORT_ENABLED:false}
+    baggage:
+      remote-fields:
+        - X-Correlation-Id
+      correlation:
+        fields:
+          - X-Correlation-Id
   opentelemetry:
     tracing:
       export:
@@ -45,3 +51,7 @@ management:
     web:
       exposure:
         include: health,info
+
+logging:
+  pattern:
+    correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-},%X{correlationId:-}] "

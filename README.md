@@ -6,25 +6,12 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-33-tracing` |
-| Lesson | 33 — Distributed tracing with OpenTelemetry / Micrometer Tracing |
-| Parent | `lesson-32-redis-cache` |
-| What changed | `spring-boot-starter-opentelemetry` on Course, Enrollment, Order, BFF, Gateway; OTLP export off by default; Kafka observation enabled; `enrollment.enroll` Observation; optional Jaeger profile `observability`. |
+| Branch | `lesson-34-correlation-id` |
+| Lesson | 34 — Correlation ID from Gateway to services |
+| Parent | `lesson-33-tracing` |
+| What changed | Shared `CorrelationIds`; Gateway filter keeps/generates `X-Correlation-Id`; servlet filters + MDC on Course/Enrollment/Order/BFF; RestClient/WebClient propagation; Micrometer baggage; logging pattern includes `correlationId`. |
 
-## Tracing
-
-| Setting | Default |
-|---|---|
-| `TRACING_EXPORT_ENABLED` | `false` (tests / local without collector) |
-| `OTLP_TRACES_ENDPOINT` | `http://localhost:4318/v1/traces` |
-| Sample probability | `1.0` in lab |
-
-```bash
-docker compose --profile observability up -d jaeger
-TRACING_EXPORT_ENABLED=true docker compose up -d
-```
-
-Jaeger UI: http://localhost:16686
+Correlation id ≠ OpenTelemetry trace id. Both appear in the log pattern.
 
 ## Test
 
