@@ -38,7 +38,7 @@ public class WebCourseClient implements CourseTransport {
       CourseEnvelope body =
           courseWebClient
               .get()
-              .uri(ApiVersions.PATH_V1 + "/courses/{id}", courseId)
+              .uri("/internal/courses/{id}", courseId)
               .header(ApiVersions.HEADER, ApiVersions.V1)
               .retrieve()
               .onStatus(

@@ -28,6 +28,7 @@ public class ZeroTrustAuthFilter extends OncePerRequestFilter {
     if (path.startsWith("/actuator/")) {
       return true;
     }
+    // Public catalogue; /internal/** is authenticated + scoped in doFilterInternal.
     return "GET".equalsIgnoreCase(request.getMethod())
         && (path.equals("/api/v1/courses") || path.startsWith("/api/v1/courses/"));
   }
@@ -41,17 +42,29 @@ public class ZeroTrustAuthFilter extends OncePerRequestFilter {
 
     var principal = DemoBearerAuthenticator.authenticate(request.getHeader(DemoJwtSupport.HEADER));
     if (principal.isEmpty()) {
-      response.setStatus(ErrorCode.UNAUTHORIZED.getHttpStatus().value());
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      byte[] body =
-          """
-          {"success":false,"code":"UNAUTHORIZED","message":"Bearer demo token required"}
-          """
-              .getBytes(StandardCharsets.UTF_8);
-      response.getOutputStream().write(body);
+      writeJson(response, ErrorCode.UNAUTHORIZED, "Bearer demo token required");
+      return;
+    }
+    String path = request.getRequestURI();
+    if (path.startsWith("/internal/")
+        && !principal.get().scopes().contains(DemoJwtSupport.SCOPE_COURSE_READ)) {
+      writeJson(response, ErrorCode.FORBIDDEN, "Missing scope course.read");
       return;
     }
     request.setAttribute(ATTR_PRINCIPAL, principal.get());
     filterChain.doFilter(request, response);
+  }
+
+  private static void writeJson(HttpServletResponse response, ErrorCode code, String message)
+      throws IOException {
+    response.setStatus(code.getHttpStatus().value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    String body =
+        "{\"success\":false,\"code\":\""
+            + code.name()
+            + "\",\"message\":\""
+            + message.replace("\"", "\\\"")
+            + "\"}";
+    response.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
   }
 }

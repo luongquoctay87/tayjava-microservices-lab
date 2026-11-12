@@ -6,17 +6,24 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-28-zero-trust` |
-| Lesson | 28 — Zero-trust between services (bridge) |
-| Parent | `lesson-27-config-server` |
-| What changed | Each API service validates identity itself via lab-only `Authorization: Bearer demo:<subject>` (`ZeroTrustAuthFilter` + registration). **`X-User-Id` / `X-Roles` are never credentials**. Course catalogue GET stays public; writes and Enrollment/Order/BFF require a Bearer. Deep JWT/OAuth2 → Spring Security series. |
+| Branch | `lesson-29-service-auth` |
+| Lesson | 29 — Service-to-service auth (bridge) |
+| Parent | `lesson-28-zero-trust` |
+| What changed | Course exposes **`GET /internal/courses/{id}`** (not Gateway-routed) requiring demo Bearer with `scope=course.read`. Enrollment REST/WebClient attach a lab client-credentials stand-in (`Bearer demo:enrollment-service;scope=course.read`) and call the internal path. **mTLS** is documented only (optional Compose SSL bundles belong in a later hardening pass / Spring Security series). |
 
-## Demo auth (lab only)
+## Demo tokens
 
 ```text
+# User (lesson 28)
 Authorization: Bearer demo:an.student
-Authorization: Bearer demo:enrollment-service;scope=course.read   # lesson 29
+
+# Service client-credentials stand-in (this lesson)
+Authorization: Bearer demo:enrollment-service;scope=course.read
 ```
+
+## mTLS (optional, not wired)
+
+Mutual TLS authenticates the channel once SANs are checked. This lab keeps HTTP plaintext on the Compose network and proves caller identity with the scoped demo Bearer above. Production often combines mesh mTLS + token scopes.
 
 ## Test
 

@@ -1,7 +1,7 @@
 {
   "id" : "2433c172-de9c-4489-977c-53096bdb21b8",
   "request" : {
-    "urlPath" : "/api/v1/courses/1",
+    "urlPath" : "/internal/courses/1",
     "method" : "GET",
     "headers" : {
       "API-Version" : {

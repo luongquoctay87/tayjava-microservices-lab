@@ -1,5 +1,6 @@
 package com.tayjava.config;
 
+import com.tayjava.common.security.DemoJwtSupport;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class CourseClientConfig {
 
+  /** Lab-only client-credentials stand-in (no Authorization Server). */
+  private static final String SERVICE_BEARER =
+      DemoJwtSupport.serviceBearer(
+          DemoJwtSupport.CLIENT_ENROLLMENT, DemoJwtSupport.SCOPE_COURSE_READ);
+
   @Bean
   RestClient courseRestClient(
       RestClient.Builder builder,
@@ -22,7 +28,11 @@ public class CourseClientConfig {
     HttpClient httpClient = HttpClient.newBuilder().connectTimeout(connectTimeout).build();
     JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
     factory.setReadTimeout(readTimeout);
-    return builder.baseUrl(baseUrl).requestFactory(factory).build();
+    return builder
+        .baseUrl(baseUrl)
+        .defaultHeader(DemoJwtSupport.HEADER, SERVICE_BEARER)
+        .requestFactory(factory)
+        .build();
   }
 
   @Bean
@@ -32,6 +42,11 @@ public class CourseClientConfig {
       @Value("${tayjava.clients.course-connect-timeout}") Duration connectTimeout,
       @Value("${tayjava.clients.course-read-timeout}") Duration readTimeout) {
     HttpClient httpClient = HttpClient.newBuilder().connectTimeout(connectTimeout).build();
-    return builder.baseUrl(baseUrl).clientConnector(new JdkClientHttpConnector(httpClient)).build();
+    return builder
+        .baseUrl(baseUrl)
+        .defaultHeader(DemoJwtSupport.HEADER, SERVICE_BEARER)
+        .clientConnector(new JdkClientHttpConnector(httpClient))
+        .build();
   }
 }
+

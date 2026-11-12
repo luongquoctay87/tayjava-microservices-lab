@@ -35,7 +35,7 @@ public class RestCourseClient implements CourseTransport {
       CourseEnvelope body =
           courseRestClient
               .get()
-              .uri(ApiVersions.PATH_V1 + "/courses/{id}", courseId)
+              .uri("/internal/courses/{id}", courseId)
               .header(ApiVersions.HEADER, ApiVersions.V1)
               .retrieve()
               .body(CourseEnvelope.class);
