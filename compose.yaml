@@ -148,10 +148,23 @@ services:
       retries: 6
       start_period: 40s
 
+  redis:
+    image: redis:7.4-alpine
+    networks:
+      - tayjava-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   gateway-service:
     build:
       context: .
       dockerfile: gateway-service/Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - tayjava-net
     ports:
@@ -161,6 +174,9 @@ services:
       ENROLLMENT_URI: http://enrollment-service:8082
       ORDER_URI: http://order-service:8084
       BFF_URI: http://bff-service:8083
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      TRUSTED_PROXY_COUNT: "0"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
       interval: 10s

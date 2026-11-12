@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,5 +27,15 @@ public class OrderController {
   public ResponseEntity<Resp<List<OrderResp>>> listByStudent(
       @RequestParam("student") String studentUsername) {
     return ApiResp.ok(orderService.getByStudentUsername(studentUsername));
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<Resp<OrderResp>> getById(@PathVariable("id") Long id) {
+    return ApiResp.ok(orderService.getById(id));
+  }
+
+  @PostMapping("/{id}/pay")
+  public ResponseEntity<Resp<OrderResp>> pay(@PathVariable("id") Long id) {
+    return ApiResp.ok(orderService.markPayInitiated(id));
   }
 }

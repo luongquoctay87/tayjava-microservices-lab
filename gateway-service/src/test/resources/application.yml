@@ -1,6 +1,10 @@
 spring:
   main:
     web-application-type: reactive
+  data:
+    redis:
+      connect-timeout: 200ms
+      timeout: 200ms
   cloud:
     gateway:
       server:
@@ -16,6 +20,18 @@ spring:
                 - Path=/api/v1/courses/featured
               filters:
                 - SetPath=/api/v1/featured-courses
+            - id: order-pay
+              order: 1
+              uri: ${ORDER_URI:http://127.0.0.1:9}
+              predicates:
+                - Path=/api/v1/orders/*/pay
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 3
+                    key-resolver: "#{@userOrIpKeyResolver}"
             - id: course-v0-rewrite
               order: 5
               uri: ${COURSE_URI:http://127.0.0.1:9}
@@ -50,6 +66,10 @@ spring:
               uri: ${BFF_URI:http://127.0.0.1:9}
               predicates:
                 - Path=/api/v1/me,/api/v1/me/**,/api/v1/featured-courses
+
+tayjava:
+  gateway:
+    trusted-proxy-count: 0
 
 management:
   endpoints:

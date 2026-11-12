@@ -2,6 +2,8 @@ package com.tayjava.service;
 
 import com.tayjava.common.dto.event.EnrollmentCreatedEvent;
 import com.tayjava.common.dto.order.OrderResp;
+import com.tayjava.common.enums.ErrorCode;
+import com.tayjava.common.exception.ErrorException;
 import com.tayjava.entity.CourseOrder;
 import com.tayjava.messaging.InboxGuard;
 import com.tayjava.repository.CourseOrderRepository;
@@ -59,6 +61,29 @@ public class OrderServiceImpl implements OrderService {
     return courseOrderRepository.findByStudentUsername(studentUsername).stream()
         .map(this::toResp)
         .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public OrderResp getById(Long orderId) {
+    return toResp(requireOrder(orderId));
+  }
+
+  @Override
+  @Transactional
+  public OrderResp markPayInitiated(Long orderId) {
+    CourseOrder order = requireOrder(orderId);
+    if ("FULFILLED".equals(order.getStatus()) || "FULFILLING".equals(order.getStatus())) {
+      return toResp(order);
+    }
+    order.setStatus("FULFILLING");
+    return toResp(courseOrderRepository.save(order));
+  }
+
+  private CourseOrder requireOrder(Long orderId) {
+    return courseOrderRepository
+        .findById(orderId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.DATA_NOT_FOUND, "Order not found"));
   }
 
   private OrderResp toResp(CourseOrder order) {

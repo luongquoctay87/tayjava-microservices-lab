@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: gateway-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 200ms
+      timeout: 200ms
   cloud:
     gateway:
       server:
@@ -18,7 +24,6 @@ spring:
                 allowedMethods: "GET,POST,PUT,DELETE,OPTIONS"
                 allowedHeaders: "*"
           routes:
-            # Specific path before the course catch-all (order matters).
             - id: courses-featured
               order: 0
               uri: ${BFF_URI:http://localhost:8083}
@@ -26,6 +31,18 @@ spring:
                 - Path=/api/v1/courses/featured
               filters:
                 - SetPath=/api/v1/featured-courses
+            - id: order-pay
+              order: 1
+              uri: ${ORDER_URI:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/orders/*/pay
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 3
+                    key-resolver: "#{@userOrIpKeyResolver}"
             - id: course-v0-rewrite
               order: 5
               uri: ${COURSE_URI:http://localhost:8081}
@@ -33,6 +50,12 @@ spring:
                 - Path=/api/courses,/api/courses/**
               filters:
                 - RewritePath=/api/courses(?<segment>/?.*), /api/v1/courses$\{segment}
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 50
+                    redis-rate-limiter.burstCapacity: 100
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
             - id: course-legacy-strip
               order: 5
               uri: ${COURSE_URI:http://localhost:8081}
@@ -45,6 +68,13 @@ spring:
               uri: ${COURSE_URI:http://localhost:8081}
               predicates:
                 - Path=/api/v1/courses,/api/v1/courses/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 50
+                    redis-rate-limiter.burstCapacity: 100
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
             - id: enrollment
               order: 10
               uri: ${ENROLLMENT_URI:http://localhost:8082}
@@ -60,6 +90,10 @@ spring:
               uri: ${BFF_URI:http://localhost:8083}
               predicates:
                 - Path=/api/v1/me,/api/v1/me/**,/api/v1/featured-courses
+
+tayjava:
+  gateway:
+    trusted-proxy-count: ${TRUSTED_PROXY_COUNT:0}
 
 management:
   endpoint:

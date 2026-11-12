@@ -9,4 +9,8 @@ public interface OrderService {
   OrderResp createFromEnrollmentEvent(EnrollmentCreatedEvent event);
 
   List<OrderResp> getByStudentUsername(String studentUsername);
+
+  OrderResp getById(Long orderId);
+
+  OrderResp markPayInitiated(Long orderId);
 }
