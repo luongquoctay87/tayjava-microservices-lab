@@ -1,6 +1,7 @@
 package com.tayjava.service;
 
-import com.tayjava.client.CourseApiClient;
+import com.tayjava.cache.CourseCache;
+import com.tayjava.cache.CourseView;
 import com.tayjava.client.EnrollmentApiClient;
 import com.tayjava.client.OrderApiClient;
 import com.tayjava.common.dto.bff.MyCourseResp;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class MyCoursesServiceImpl implements MyCoursesService {
 
   private final EnrollmentApiClient enrollmentApiClient;
-  private final CourseApiClient courseApiClient;
+  private final CourseCache courseCache;
   private final OrderApiClient orderApiClient;
 
   @Override
@@ -26,14 +27,14 @@ public class MyCoursesServiceImpl implements MyCoursesService {
         enrollmentApiClient.listByStudent(studentUsername);
     List<MyCourseResp> result = new ArrayList<>(enrollments.size() + 4);
     for (EnrollmentApiClient.EnrollmentItem enrollment : enrollments) {
-      CourseApiClient.CourseItem course = courseApiClient.getById(enrollment.getCourseId());
+      CourseView course = courseCache.getCourse(enrollment.getCourseId());
       result.add(
           MyCourseResp.builder()
               .enrollmentId(enrollment.getId())
-              .courseId(course.getId())
-              .slug(course.getSlug())
-              .title(course.getTitle())
-              .instructorUsername(course.getInstructorUsername())
+              .courseId(course.id())
+              .slug(course.slug())
+              .title(course.title())
+              .instructorUsername(course.instructorUsername())
               .status(enrollment.getStatus())
               .build());
     }
@@ -51,10 +52,10 @@ public class MyCoursesServiceImpl implements MyCoursesService {
     String slug = null;
     String instructor = null;
     try {
-      CourseApiClient.CourseItem course = courseApiClient.getById(pending.getCourseId());
-      title = course.getTitle();
-      slug = course.getSlug();
-      instructor = course.getInstructorUsername();
+      CourseView course = courseCache.getCourse(pending.getCourseId());
+      title = course.title();
+      slug = course.slug();
+      instructor = course.instructorUsername();
     } catch (ErrorException ignored) {
       // Course lag or outage must not invent an enrollment; keep the FULFILLING banner.
     }

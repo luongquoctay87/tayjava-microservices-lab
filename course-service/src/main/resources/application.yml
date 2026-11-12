@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: course-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 1s
+      timeout: 500ms
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/course_db}
     username: ${SPRING_DATASOURCE_USERNAME:course_app}

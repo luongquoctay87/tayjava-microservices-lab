@@ -1,5 +1,6 @@
 package com.tayjava.service;
 
+import com.tayjava.cache.CourseCacheInvalidator;
 import com.tayjava.common.dto.training.course.CourseReq;
 import com.tayjava.common.dto.training.course.CourseResp;
 import com.tayjava.common.enums.ErrorCode;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CourseServiceImpl implements CourseService {
 
   private final CourseRepository courseRepository;
+  private final CourseCacheInvalidator courseCacheInvalidator;
 
   @Override
   @Transactional(readOnly = true)
@@ -37,7 +41,6 @@ public class CourseServiceImpl implements CourseService {
   @Override
   @Transactional
   public CourseResp create(CourseReq request) {
-    // No Spring Security yet: open until lessons 28–29 lock this to the instructor role.
     Course created =
         courseRepository.save(
             Course.builder()
@@ -47,7 +50,38 @@ public class CourseServiceImpl implements CourseService {
                 .published(true)
                 .build());
     log.info("Created course id={} slug={}", created.getId(), created.getSlug());
+    evictAfterCommit(created.getId());
     return toResp(created);
+  }
+
+  @Override
+  @Transactional
+  public CourseResp update(Long id, CourseReq request) {
+    Course course =
+        courseRepository
+            .findById(id)
+            .orElseThrow(() -> new ErrorException(ErrorCode.COURSE_NOT_FOUND));
+    course.setSlug(request.getSlug());
+    course.setTitle(request.getTitle());
+    course.setInstructorUsername(request.getInstructorUsername());
+    Course saved = courseRepository.save(course);
+    log.info("Updated course id={} slug={}", saved.getId(), saved.getSlug());
+    evictAfterCommit(saved.getId());
+    return toResp(saved);
+  }
+
+  private void evictAfterCommit(Long courseId) {
+    if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+      courseCacheInvalidator.evict(courseId);
+      return;
+    }
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            courseCacheInvalidator.evict(courseId);
+          }
+        });
   }
 
   private CourseResp toResp(Course course) {

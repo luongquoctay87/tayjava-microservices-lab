@@ -11,3 +11,9 @@ spring:
   grpc:
     server:
       port: 0
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 9
+      connect-timeout: 100ms
+      timeout: 100ms

@@ -32,4 +32,10 @@ public class CourseController {
   public ResponseEntity<Resp<CourseResp>> create(@Valid @RequestBody CourseReq request) {
     return ApiResp.created(courseService.create(request));
   }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Resp<CourseResp>> update(
+      @PathVariable Long id, @Valid @RequestBody CourseReq request) {
+    return ApiResp.ok(courseService.update(id, request));
+  }
 }

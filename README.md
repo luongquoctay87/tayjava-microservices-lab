@@ -6,20 +6,19 @@ Sample multi-module Spring Boot workspace that grows with the **TayJava Microser
 
 | | |
 |---|---|
-| Branch | `lesson-30-eventual-consistency` |
-| Lesson | 30 — Eventual consistency on Enrollment |
-| Parent | `lesson-29-service-auth` |
-| What changed | Checkout creates an Order without an enrollment row; `POST …/pay` returns **`FULFILLING`**. When Order consumes `EnrollmentCreated`, matching FULFILLING orders move to **`FULFILLED`**. BFF exposes **`GET /api/v1/checkout-status/{orderId}`** for polling and shows a My Courses banner for open FULFILLING orders (does not invent an `enrollmentId`). |
+| Branch | `lesson-32-redis-cache` |
+| Lesson | 32 — Redis cache between Course and Enrollment |
+| Parent | `lesson-30-eventual-consistency` |
+| What changed | BFF `CourseCache` (cache-aside, jittered TTL, single-flight) for My Courses titles; Redis key `bff:course:v1:{id}`; course-service evicts the key after create/update commit; enroll write decisions still call Course directly. |
 
-## Drift window
+## Cache rules
 
-| Moment | Order | Enrollment | UI |
-|---|---|---|---|
-| After pay | `FULFILLING` | no row | “Order #… is being processed” |
-| After Enrollment consumer | still `FULFILLING` until event reaches Order | `APPROVED` | My Courses may already list the course |
-| After Order inbox | `FULFILLED` | `APPROVED` | checkout-status stops polling |
+| OK to cache | Not OK |
+|---|---|
+| Public title / slug / published for My Courses | Enroll / pay decisions |
+| Shared key `bff:course:v1:{id}` | Per-user authorization under that key |
 
-Poll `GET /api/v1/orders/{id}` or `GET /api/v1/checkout-status/{orderId}` with backoff — do not hammer My Courses every 50 ms looking for an enrollment that is intentionally missing.
+Redis failures are treated as misses. Stale titles are bounded by TTL (~120–150s) plus explicit eviction.
 
 ## Test
 
